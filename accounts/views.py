@@ -15,6 +15,8 @@ from django.http import JsonResponse
 from django.utils.timezone import now
 from django.views.decorators.http import require_POST
 from .models import UserProfile
+import threading
+from .email_service import send_email_async
 
 
 
@@ -63,20 +65,11 @@ def user_signup(request):
         )
 
 
-        from django.core.mail import send_mail
-        from django.core.mail.utils import DNS_NAME
+        threading.Thread(
+            target=send_email_async,
+            args=("Your abc.com OTP", f"Your OTP is {otp}", email)
+        ).start()
 
-        try:
-            send_mail(
-                subject='Your abc.com OTP',
-                message=f'Your OTP is {otp}',
-                from_email='ai.generatormails@gmail.com',
-                recipient_list=[email],
-            )
-        except Exception as e:
-            if 'getaddrinfo' in str(e):
-                messages.error(request, 'Email service temporarily unavailable. Please try again.')
-            raise  # Or handle silently
 
 
         request.session["signup_data"] = {
@@ -229,17 +222,11 @@ def resend_otp(request):
         defaults={"otp": otp}
     )
 
-    # 🔥 FAIL SAFE EMAIL
-    try:
-        send_mail(
-            "Your OTP - AI Generator",
-            f"Your OTP is {otp}",
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            fail_silently=True
-        )
-    except Exception:
-        pass
+    threading.Thread(
+        target=send_email_async,
+        args=("Your abc.com Password Reset OTP", f"Your OTP is {otp}", email)
+    ).start()
+
 
     return JsonResponse({"status": "success"})
 
@@ -284,12 +271,11 @@ def forgot_send_otp(request):
         purpose="reset"
     )
 
-    send_mail(
-        "Password Reset OTP - abc.com",
-        f"Your OTP is {otp}. Valid for 5 minutes.",
-        settings.DEFAULT_FROM_EMAIL,
-        [email],
-    )
+    threading.Thread(
+        target=send_email_async,
+        args=("Your Password Reset OTP", f"Your OTP is {otp}", email)
+    ).start()
+
 
     request.session["reset_email"] = email
     request.session["otp_verified"] = False
@@ -314,12 +300,11 @@ def forgot_resend_otp(request):
         purpose="reset"
     )
 
-    send_mail(
-        "Password Reset OTP - abc.com",
-        f"Your OTP is {otp}. Valid for 5 minutes.",
-        settings.DEFAULT_FROM_EMAIL,
-        [email],
-    )
+    threading.Thread(
+        target=send_email_async,
+        args=("Forget Reset OTP", f"Your OTP is {otp}", email)
+    ).start()
+
 
     return JsonResponse({"status": "otp_resent"})
 
