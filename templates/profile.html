@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - AI_Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-main: #f7f7f8;
+            --bg-card: #ffffff;
+            --text-primary: #202123;
+            --text-secondary: #6e6e80;
+            --border-color: #e5e5e8;
+            --primary-color: #10a37f;
+            --primary-hover: #0d8b6a;
+            --input-bg: #ffffff;
+            --input-border: #d1d5db;
+            --input-focus: #10a37f;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: linear-gradient(135deg, rgba(16, 163, 127, 0.3), rgba(16, 163, 127, 0.1));
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(50px);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px 32px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .site-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .logout-btn {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: var(--bg-main);
+            color: var(--text-primary);
+            border-color: var(--input-border);
+        }
+
+        .profile-header {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 40px 32px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .avatar-section {
+            margin-bottom: 24px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: #555;
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+        }
+
+
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .avatar-upload {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 36px;
+            height: 36px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s ease;
+        }
+
+        .avatar-upload:hover {
+            background: var(--primary-hover);
+            transform: scale(1.1);
+        }
+
+        .avatar-upload input {
+            display: none;
+        }
+
+        .user-name {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .user-email {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .user-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 16px;
+            background: rgba(16, 163, 127, 0.1);
+            color: var(--primary-color);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .profile-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .edit-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--primary-color);
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .edit-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="password"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 15px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--input-focus);
+            box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+        }
+
+        input:disabled,
+        textarea:disabled,
+        select:disabled {
+            background: var(--bg-main);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px;
+            transition: color 0.2s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--text-primary);
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--bg-main);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn-primary {
+            flex: 1;
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #ffffff;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(16, 163, 127, 0.2);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary.loading {
+            position: relative;
+            color: transparent;
+            pointer-events: none;
+        }
+
+        .btn-primary.loading::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-secondary {
+            flex: 1;
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-main);
+            color: var(--text-primary);
+        }
+
+        .btn-danger {
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #ffffff;
+            background: var(--danger-color);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background: var(--bg-main);
+            border-radius: 8px;
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--bg-main);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: rgba(16, 163, 127, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .activity-time {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        input.error {
+            border-color: #ef4444;
+            animation: shake 0.4s ease;
+        }
+
+        input.success {
+            border-color: #10a37f;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ffffff;
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            border-left: 4px solid var(--primary-color);
+            max-width: 350px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left-color: #10a37f;
+        }
+
+        .notification.error {
+            border-left-color: #ef4444;
+        }
+
+        .notification-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .notification-text {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .modal-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .profile-content {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .card {
+                padding: 24px;
+            }
+
+            .notification {
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+        }
+        .action-btn.home {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px; /* Icon aur text ke beech ka gap */
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-family: 'Segoe UI', sans-serif;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Hover Effect: Jab mouse button par jaye */
+        .action-btn.home:hover {
+            background: linear-gradient(135deg, #157347 0%, #0d5132 100%);
+            transform: translateY(-2px); /* Button thoda upar uthega */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Active Effect: Jab button click ho */
+        .action-btn.home:active {
+            transform: translateY(0);
+        }
+
+        /* Accessibility */
+        .btn-primary:focus-visible,
+        .btn-secondary:focus-visible,
+        .btn-danger:focus-visible,
+        input:focus-visible,
+        textarea:focus-visible,
+        select:focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="site-title">🔥 AI_Generator</div>
+            </div>
+            <a href="/" class="action-btn home">🏠 Home</a>
+            <button class="logout-btn" id="logoutBtn">
+                <span>🚪</span> Logout
+            </button>
+        </div>
+
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="avatar-section">
+                <div class="avatar-wrapper">
+                    <div class="avatar" id="avatarDisplay"></div>
+                    <label class="avatar-upload">
+                        <input type="file" id="avatarInput" accept="image/*">
+                        <span>📷</span>
+                    </label>
+                </div>
+            </div>
+            <div class="user-name">{{ full_name }}</div>
+            <div class="user-email">{{ email }}</div>
+            <div class="user-status">
+                <span class="status-dot"></span>
+                <span>Active Account</span>
+            </div>
+        </div>
+
+        <meta name="csrf-token" content="{{ csrf_token }}">
+
+
+        <!-- Profile Content -->
+        <div class="profile-content">
+            <!-- Personal Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Personal Information</h2>
+                    <button class="edit-btn" id="editPersonalBtn">Edit</button>
+                </div>
+                <form id="personalInfoForm">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" value="" placeholder="Enter your full name" disabled>
+                        <div class="error-message" id="nameError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" value="" placeholder="Enter your email" disabled>
+                        <div class="error-message" id="emailError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" value="" placeholder="Enter your phone number" disabled>
+                        <div class="error-message" id="phoneError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="bio">Bio</label>
+                        <textarea id="bio" placeholder="Tell us about yourself..." disabled></textarea>
+                    </div>
+                    <div class="button-group" id="personalBtnGroup" style="display: none;">
+                        <button type="submit" class="btn-primary" id="savePersonalBtn">Save Changes</button>
+                        <button type="button" class="btn-secondary" id="cancelPersonalBtn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Account Settings -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Account Settings</h2>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Account Type</span>
+                    <span class="info-value" id="accountType">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Member Since</span>
+                    <span class="info-value">{{ date_joined|date:"d M Y" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Last Login</span>
+                    <span class="info-value">{{ last_login|date:"d M Y, H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Two-Factor Auth</span>
+                    <span class="info-value" id="twoFactorStatus">-</span>
+                </div>
+                <div class="button-group">
+                    <button class="btn-secondary" id="changePasswordBtn">Change Password</button>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="card full-width">
+                <div class="card-header">
+                    <h2 class="card-title">Your Statistics</h2>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalChats">0</div>
+                        <div class="stat-label">Total Chats</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="daysActive">0</div>
+                        <div class="stat-label">Days Active</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="satisfaction">0%</div>
+                        <div class="stat-label">Satisfaction</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card full-width">
+                <div class="card-header">
+                    <h2 class="card-title">Recent Activity</h2>
+                </div>
+                <div id="activityContainer">
+                    <!-- Activity items will be loaded from backend -->
+                    <div style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                        No recent activity
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="card full-width">
+                <div class="card-header">
+                    <h2 class="card-title" style="color: var(--danger-color);">Danger Zone</h2>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
+                    Once you delete your account, there is no going back. Please be certain.
+                </p>
+                <button class="btn-danger" id="deleteAccountBtn">Delete Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal-overlay" id="passwordModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Change Password</div>
+                <div class="modal-text">Enter your current password and choose a new one</div>
+            </div>
+            <form id="changePasswordForm">
+                <div class="form-group">
+                    <label for="currentPassword">Current Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="currentPassword" placeholder="Enter current password" required>
+                        <button type="button" class="password-toggle" id="currentPasswordToggle">
+                            <span>👁️</span>
+                        </button>
+                    </div>
+                    <div class="error-message" id="currentPasswordError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="newPasswordModal">New Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="newPasswordModal" placeholder="Enter new password" required>
+                        <button type="button" class="password-toggle" id="newPasswordToggle">
+                            <span>👁️</span>
+                        </button>
+                    </div>
+                    <div class="error-message" id="newPasswordError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPasswordModal">Confirm New Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="confirmPasswordModal" placeholder="Confirm new password" required>
+                        <button type="button" class="password-toggle" id="confirmPasswordToggle">
+                            <span>👁️</span>
+                        </button>
+                    </div>
+                    <div class="error-message" id="confirmPasswordError"></div>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="btn-primary" id="submitPasswordBtn">Update Password</button>
+                    <button type="button" class="btn-secondary" id="cancelPasswordBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Account Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" style="color: var(--danger-color);">Delete Account</div>
+                <div class="modal-text">This action cannot be undone. All your data will be permanently deleted.</div>
+            </div>
+            <form id="deleteAccountForm">
+                <div class="form-group">
+                    <label for="deleteConfirmPassword">Enter your password to confirm</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="deleteConfirmPassword" placeholder="Enter your password" required>
+                        <button type="button" class="password-toggle" id="deletePasswordToggle">
+                            <span>👁️</span>
+                        </button>
+                    </div>
+                    <div class="error-message" id="deletePasswordError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="deleteConfirmText">Type "DELETE" to confirm</label>
+                    <input type="text" id="deleteConfirmText" placeholder="Type DELETE" required>
+                    <div class="error-message" id="deleteTextError"></div>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="btn-danger" id="confirmDeleteBtn">Delete My Account</button>
+                    <button type="button" class="btn-secondary" id="cancelDeleteBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    /* ================= CSRF ================= */
+    function getCSRFToken() {
+        return document.querySelector('meta[name="csrf-token"]').content;
+    }
+
+    /* ================= UI ================= */
+    const UI = {
+        notify(msg) { alert(msg); }
+    };
+
+    /* ================= ELEMENTS ================= */
+    const fullName = document.getElementById("fullName");
+    const email = document.getElementById("email");
+    const phone = document.getElementById("phone");
+    const bio = document.getElementById("bio");
+
+    email.disabled = true; // 🔒 email never editable
+
+    /* ================= LOAD PROFILE ================= */
+    fetch("/profile/data/", { credentials: "same-origin" })
+        .then(r => r.json())
+        .then(d => {
+            document.querySelector(".user-name").innerText = d.name;
+            document.querySelector(".user-email").innerText = d.email;
+
+            fullName.value = d.name;
+            email.value = d.email;
+            phone.value = d.phone || "";
+            bio.value = d.bio || "";
+
+            document.getElementById("accountType").innerText = d.accountType;
+            document.getElementById("twoFactorStatus").innerText =
+                d.twoFactorEnabled ? "Enabled ✓" : "Disabled";
+
+            document.getElementById("totalChats").innerText = d.stats.totalChats;
+            document.getElementById("daysActive").innerText = d.stats.daysActive;
+            document.getElementById("satisfaction").innerText = d.stats.satisfaction + "%";
+
+            const avatarDisplay = document.getElementById("avatarDisplay");
+
+            if (d.avatar) {
+                avatarDisplay.style.backgroundImage = `url(${d.avatar})`;
+                avatarDisplay.innerText = "";
+            } else {
+                const initials = d.name
+                    .split(" ")
+                    .map(w => w[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase();
+
+                avatarDisplay.style.backgroundImage = "";
+                avatarDisplay.innerText = initials;
+            }
+
+
+            // Activity
+            const box = document.getElementById("activityContainer");
+            if (d.activities.length) {
+                box.innerHTML = d.activities.map(a => `
+                    <div class="activity-item">
+                        <div>${a.icon}</div>
+                        <div>
+                            <div>${a.title}</div>
+                            <small>${a.time}</small>
+                        </div>
+                    </div>
+                `).join("");
+            }
+        })
+        .catch(() => UI.notify("Failed to load profile data"));
+
+    /* ================= EDIT PROFILE ================= */
+    const editBtn = document.getElementById("editPersonalBtn");
+    const saveBtn = document.getElementById("savePersonalBtn");
+    const cancelBtn = document.getElementById("cancelPersonalBtn");
+    const btnGroup = document.getElementById("personalBtnGroup");
+
+    editBtn.onclick = () => {
+        fullName.disabled = false;
+        phone.disabled = false;
+        bio.disabled = false;
+        btnGroup.style.display = "flex";
+    };
+
+    cancelBtn.onclick = () => {
+        fullName.disabled = true;
+        phone.disabled = true;
+        bio.disabled = true;
+        btnGroup.style.display = "none";
+    };
+
+    
+
+    document.getElementById("personalInfoForm").onsubmit = e => {
+        e.preventDefault();
+
+        fetch("/profile/update/", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken()
+            },
+            body: JSON.stringify({
+                name: fullName.value,
+                phone: phone.value,
+                bio: bio.value
+            })
+        })
+        .then(r => r.json())
+        .then(() => {
+            document.querySelector(".user-name").innerText = fullName.value;
+            UI.notify("Profile updated");
+            cancelBtn.click();
+        })
+        .catch(() => UI.notify("Update failed"));
+    };
+
+    const avatarInput = document.getElementById("avatarInput");
+    const avatarDisplay = document.getElementById("avatarDisplay");
+
+    avatarInput.addEventListener("change", () => {
+        const file = avatarInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("avatar", file);
+
+        fetch("/profile/avatar/", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "X-CSRFToken": getCSRFToken()
+            },
+            body: formData
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.error) {
+                UI.notify(d.error);
+                return;
+            }
+
+            // ✅ backend 'url' bhejta hai
+            avatarDisplay.style.backgroundImage = `url(${d.url})`;
+            avatarDisplay.innerText = "";
+
+            UI.notify("Profile photo updated");
+        })
+        .catch(() => UI.notify("Avatar upload failed"));
+    });
+
+
+    /* ================= PASSWORD TOGGLE ================= */
+    function toggleEye(btnId, inputId) {
+        document.getElementById(btnId).onclick = () => {
+            const i = document.getElementById(inputId);
+            i.type = i.type === "password" ? "text" : "password";
+        };
+    }
+    toggleEye("currentPasswordToggle", "currentPassword");
+    toggleEye("newPasswordToggle", "newPasswordModal");
+    toggleEye("confirmPasswordToggle", "confirmPasswordModal");
+    toggleEye("deletePasswordToggle", "deleteConfirmPassword");
+
+    /* ================= CHANGE PASSWORD ================= */
+    document.getElementById("changePasswordBtn").onclick =
+        () => document.getElementById("passwordModal").classList.add("show");
+
+    document.getElementById("cancelPasswordBtn").onclick =
+        () => document.getElementById("passwordModal").classList.remove("show");
+
+    document.getElementById("changePasswordForm").onsubmit = e => {
+        e.preventDefault();
+
+        fetch("/profile/change-password/", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken()
+            },
+            body: JSON.stringify({
+                currentPassword: currentPassword.value,
+                newPassword: newPasswordModal.value
+            })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.error) throw d.error;
+            UI.notify("Password changed");
+            document.getElementById("passwordModal").classList.remove("show");
+        })
+        .catch(e => UI.notify(e));
+    };
+
+    /* ================= DELETE ACCOUNT ================= */
+    document.getElementById("deleteAccountBtn").onclick =
+        () => document.getElementById("deleteModal").classList.add("show");
+
+    document.getElementById("cancelDeleteBtn").onclick =
+        () => document.getElementById("deleteModal").classList.remove("show");
+
+    document.getElementById("deleteAccountForm").onsubmit = e => {
+        e.preventDefault();
+        if (deleteConfirmText.value !== "DELETE") return UI.notify("Type DELETE");
+
+        fetch("/profile/delete/", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken()
+            },
+            body: JSON.stringify({ password: deleteConfirmPassword.value })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.error) {
+                UI.notify(d.error);
+                return;
+            }
+            window.location.href = "/";
+        })
+
+        .catch(() => UI.notify("Delete failed"));
+    };
+
+    /* ================= LOGOUT ================= */
+    document.getElementById("logoutBtn").onclick = () => {
+        window.location.href = "/logout/";
+    };
+
+});
+</script>
+
+</body>
+</html>
+

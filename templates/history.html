@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Generator History</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+        font-family:Segoe UI,Arial,sans-serif;
+        background:linear-gradient(135deg,#667eea,#764ba2);
+        min-height:100vh;
+        padding:10px;
+    }
+    .container{
+        max-width:1100px;
+        margin:auto;
+        background:#fff;
+        border-radius:16px;
+        overflow:hidden;
+        box-shadow:0 20px 60px rgba(0,0,0,.3);
+    }
+    .header{
+        background:linear-gradient(135deg,#667eea,#764ba2);
+        color:#fff;
+        padding:30px;
+    }
+    .header h1{font-size:28px;}
+    .controls{
+        display:flex;
+        gap:12px;
+        flex-wrap:wrap;
+        padding:15px 25px;
+        background:#f8f9fa;
+        border-bottom:1px solid #ddd;
+        align-items:center;
+    }
+    .search-box{flex:1;min-width:220px;position:relative;}
+    .search-box input{
+        width:100%;
+        padding:10px 15px;
+        border:2px solid #ddd;
+        border-radius:8px;
+    }
+    .filter-btn,.action-btn{
+        padding:10px 15px;
+        border-radius:8px;
+        border:2px solid #ddd;
+        background:#fff;
+        cursor:pointer;
+    }
+    .filter-btn.active{
+        background:#667eea;
+        color:#fff;
+        border-color:#667eea;
+    }
+    .action-btn{
+        background:#dc3545;
+        color:#fff;
+        border-color:#dc3545;
+    }
+    .action-btn.home {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px; /* Icon aur text ke beech ka gap */
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-family: 'Segoe UI', sans-serif;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Hover Effect: Jab mouse button par jaye */
+    .action-btn.home:hover {
+        background: linear-gradient(135deg, #157347 0%, #0d5132 100%);
+        transform: translateY(-2px); /* Button thoda upar uthega */
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Active Effect: Jab button click ho */
+    .action-btn.home:active {
+        transform: translateY(0);
+    }
+    .stats{
+        display:flex;
+        gap:15px;
+        padding:15px 25px;
+        background:#eef1ff;
+        font-weight:600;
+    }
+    .history-list{padding:25px;}
+    .history-item{
+        border:2px solid #e0e0e0;
+        border-radius:12px;
+        padding:18px;
+        margin-bottom:15px;
+    }
+    .history-item:hover{border-color:#667eea;}
+    .item-header{
+        display:flex;
+        justify-content:space-between;
+        margin-bottom:10px;
+    }
+    .type-icon{
+        width:40px;height:40px;
+        border-radius:10px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:20px;
+    }
+    .type-icon.text{background:#f3e5f5;}
+    .type-icon.image{background:#e3f2fd;}
+    .type-icon.code{background:#e8f5e9;}
+    .item-content{
+        background:#f8f9fa;
+        padding:12px;
+        border-radius:8px;
+        margin-bottom:12px;
+        white-space:pre-wrap;
+    }
+    .item-content img{
+        max-width:100%;
+        border-radius:8px;
+    }
+    .item-actions{
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+    }
+    .item-btn{
+        padding:8px 14px;
+        border-radius:6px;
+        border:1px solid #ccc;
+        cursor:pointer;
+        background:#fff;
+    }
+    .item-btn:hover{background:#667eea;color:#fff;border-color:#667eea;}
+    .pagination{
+        display:flex;
+        justify-content:center;
+        gap:10px;
+        padding:15px;
+    }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<div class="header">
+    <h1>🤖 AI Generator History</h1>
+    <p>Hello {{ request.user.first_name|default:request.user.username }}</p>
+</div>
+
+<div class="controls">
+    <div class="search-box">
+        <input id="searchInput" placeholder="Search history...">
+    </div>
+
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="text">Text</button>
+    <button class="filter-btn" data-filter="image">Image</button>
+    <button class="filter-btn" data-filter="code">Code</button>
+
+    <a href="/" class="action-btn home">🏠 Home</a>
+
+    <form method="POST" action="{% url 'clear_history' %}">
+        {% csrf_token %}
+        <button class="action-btn">Clear All</button>
+    </form>
+</div>
+
+<div class="stats">
+    📝 Text: <span id="statText">0</span>
+    🖼 Image: <span id="statImage">0</span>
+    💻 Code: <span id="statCode">0</span>
+</div>
+
+<div class="history-list" id="historyList">
+
+{% for item in history %}
+<div class="history-item" data-type="{{ item.type }}">
+    <div class="item-header">
+        <div class="type-icon {{ item.type }}">
+            {% if item.type == "image" %}🖼️{% endif %}
+            {% if item.type == "text" %}📝{% endif %}
+            {% if item.type == "code" %}💻{% endif %}
+        </div>
+        <span>{{ item.created_at|date:"d M Y, h:i A" }}</span>
+    </div>
+
+    <h3>{{ item.query }}</h3>
+
+    <div class="item-content">
+        {% if item.type == "image" %}
+            <img src="{{ item.response }}">
+        {% else %}
+            {{ item.response }}
+        {% endif %}
+    </div>
+
+    <div class="item-actions">
+        <button class="item-btn" onclick="downloadItem(this)">📥 Download</button>
+        {% if item.type != "image" %}
+        <button class="item-btn" onclick="copyItem(this)">📋 Copy</button>
+        {% endif %}
+        <button class="item-btn" onclick="toggleFav(this)">⭐ Favorite</button>
+
+        <form method="POST" action="{% url 'delete_history' item.id %}">
+            {% csrf_token %}
+            <button class="item-btn">🗑 Delete</button>
+        </form>
+    </div>
+</div>
+{% empty %}
+<p>No history found.</p>
+{% endfor %}
+
+</div>
+
+<div class="pagination">
+    <button class="filter-btn" onclick="prevPage()">⬅ Prev</button>
+    <button class="filter-btn" onclick="nextPage()">Next ➡</button>
+</div>
+
+</div>
+
+<script>
+let page=1,perPage=5;
+
+function renderPage(){
+    const items=[...document.querySelectorAll(".history-item")];
+    items.forEach((item,i)=>{
+        item.style.display=(i>=(page-1)*perPage && i<page*perPage)?"block":"none";
+    });
+}
+renderPage();
+
+function nextPage(){page++;renderPage();}
+function prevPage(){if(page>1){page--;renderPage();}}
+
+document.querySelectorAll(".filter-btn[data-filter]").forEach(btn=>{
+    btn.onclick=()=>{
+        document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        const f=btn.dataset.filter;
+        document.querySelectorAll(".history-item").forEach(item=>{
+            item.style.display=(f==="all"||item.dataset.type===f)?"block":"none";
+        });
+    };
+});
+
+document.getElementById("searchInput").addEventListener("input",function(){
+    const t=this.value.toLowerCase();
+    document.querySelectorAll(".history-item").forEach(i=>{
+        i.style.display=i.innerText.toLowerCase().includes(t)?"block":"none";
+    });
+});
+
+function copyItem(btn){
+    const t=btn.closest(".history-item").querySelector(".item-content").innerText;
+    navigator.clipboard.writeText(t);
+    btn.innerText="✓ Copied";
+    setTimeout(()=>btn.innerText="📋 Copy",1200);
+}
+
+function downloadItem(btn){
+    const item=btn.closest(".history-item");
+    const type=item.dataset.type;
+    if(type==="image"){
+        const img=item.querySelector("img");
+        const a=document.createElement("a");
+        a.href=img.src;a.download="image.png";a.click();
+    }else{
+        const text=item.querySelector(".item-content").innerText;
+        const blob=new Blob([text],{type:"text/plain"});
+        const a=document.createElement("a");
+        a.href=URL.createObjectURL(blob);a.download="output.txt";a.click();
+    }
+}
+
+function toggleFav(btn){
+    btn.classList.toggle("fav");
+    btn.innerText=btn.classList.contains("fav")?"⭐ Favorited":"⭐ Favorite";
+}
+
+function updateStats(){
+    let t=0,i=0,c=0;
+    document.querySelectorAll(".history-item").forEach(it=>{
+        if(it.dataset.type==="text")t++;
+        if(it.dataset.type==="image")i++;
+        if(it.dataset.type==="code")c++;
+    });
+    statText.innerText=t;
+    statImage.innerText=i;
+    statCode.innerText=c;
+}
+updateStats();
+</script>
+
+</body>
+</html>

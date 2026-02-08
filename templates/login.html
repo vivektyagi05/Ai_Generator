@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - abc.com</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-main: #f7f7f8;
+            --bg-card: #ffffff;
+            --text-primary: #202123;
+            --text-secondary: #6e6e80;
+            --border-color: #e5e5e8;
+            --primary-color: #10a37f;
+            --primary-hover: #0d8b6a;
+            --input-bg: #ffffff;
+            --input-border: #d1d5db;
+            --input-focus: #10a37f;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: linear-gradient(135deg, rgba(16, 163, 127, 0.3), rgba(16, 163, 127, 0.1));
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(50px);
+                opacity: 0;
+            }
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            animation: fadeIn 0.4s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            padding: 48px 40px;
+            border: 1px solid var(--border-color);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .logo p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            max-width: 320px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 15px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            border-color: var(--input-focus);
+            box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+        }
+
+        input[type="email"]::placeholder,
+        input[type="password"]::placeholder {
+            color: #9ca3af;
+        }
+
+        input.error {
+            border-color: #ef4444;
+            animation: shake 0.4s ease;
+        }
+
+        input.success {
+            border-color: #10a37f;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .password-strength {
+            margin-top: 8px;
+            height: 4px;
+            background: #e5e5e8;
+            border-radius: 2px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .password-strength.show {
+            display: block;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .strength-weak { 
+            width: 33%; 
+            background: #ef4444; 
+        }
+
+        .strength-medium { 
+            width: 66%; 
+            background: #f59e0b; 
+        }
+
+        .strength-strong { 
+            width: 100%; 
+            background: #10a37f; 
+        }
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            width: 100%;
+            padding-right: 45px;   /* eye ke liye space */
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px;
+            transition: color 0.2s ease;
+        }
+        .password-wrapper input[type="password"] {
+            letter-spacing: 0.2em;
+        }
+
+        .password-wrapper input[type="text"] {
+            letter-spacing: normal;
+        }
+
+        .password-wrapper input {
+            width: 100%;
+            padding: 12px 45px 12px 12px;
+            font-size: 14px;
+            font-family: inherit;
+            line-height: 1.4;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        .password-wrapper input[type="password"],
+        .password-wrapper input[type="text"] {
+            letter-spacing: normal;
+            font-family: inherit;
+        }
+
+        .password-toggle:hover {
+            color: #000;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .button-group {
+            margin-top: 28px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 13px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #ffffff;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 12px;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(16, 163, 127, 0.2);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary.loading {
+            position: relative;
+            color: transparent;
+            pointer-events: none;
+        }
+
+        .btn-primary.loading::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ffffff;
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left-color: #10a37f;
+        }
+
+        .notification.error {
+            border-left-color: #ef4444;
+        }
+
+        .notification-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .notification-text {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 13px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 6px;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-main);
+            color: var(--text-primary);
+        }
+
+        .helper-text {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .links-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 12px;
+        }
+
+        .btn-link {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+        }
+
+        .btn-link:hover {
+            color: var(--primary-hover);
+            background: rgba(16, 163, 127, 0.08);
+        }
+
+        .separator {
+            color: var(--border-color);
+            font-size: 14px;
+            user-select: none;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 36px 28px;
+            }
+
+            .logo h1 {
+                font-size: 24px;
+            }
+
+            .logo p {
+                font-size: 13px;
+            }
+
+            input[type="email"],
+            input[type="password"] {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            .links-group {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .separator {
+                display: none;
+            }
+        }
+
+        /* Accessibility */
+        .btn-primary:focus-visible,
+        .btn-secondary:focus-visible,
+        input:focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        /* Loading state (optional for future use) */
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo">
+                <h1>abc.com</h1>
+                <p>Login to save your chat history. You can also continue without login.</p>
+            </div>
+
+            <form method="post" action="/login/">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label>Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="you@example.com"
+                        required
+                    >
+                    {% if error %}
+                        <div class="error-message show">{{ error }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+
+                    <div class="password-wrapper">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            required
+                        >
+
+                        <button type="button" class="password-toggle">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn-primary" id="loginBtn">Login</button>
+                    <a href="/home/" class="btn-secondary"
+                    style="display:block;text-align:center;text-decoration:none;">
+                    Continue without login
+                    </a>
+                </div>
+
+                <div class="links-group">
+                    <a href="/signup/" class="btn-link">Create new account</a>
+                    <span class="separator">•</span>
+                    <a href="/forgot/" class="btn-link">Forgot Password?</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+<script>
+        // ========================================
+        // PARTICLE ANIMATION SYSTEM
+        // ========================================
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 30;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+            function validatePassword(password) {
+                if (!password) {
+                    return { valid: false, message: 'Password is required', strength: 0 };
+                }
+
+                if (password.length < 8) {
+                    return { valid: false, message: 'Password must be at least 8 characters', strength: 0 };
+                }
+
+                // Calculate password strength
+                let strength = 0;
+                const checks = {
+                    length: password.length >= 12,
+                    lowercase: /[a-z]/.test(password),
+                    uppercase: /[A-Z]/.test(password),
+                    numbers: /[0-9]/.test(password),
+                    special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+                };
+
+                strength = Object.values(checks).filter(Boolean).length;
+
+                if (strength < 3) {
+                    return { valid: false, message: 'Password is too weak', strength: 1 };
+                } else if (strength < 4) {
+                    return { valid: true, message: '', strength: 2 };
+                } else {
+                    return { valid: true, message: '', strength: 3 };
+                }
+            }
+
+            // XSS protection - sanitize input
+            function sanitizeInput(input) {
+                const div = document.createElement('div');
+                div.textContent = input;
+                return div.innerHTML;
+            }
+
+            // Check for SQL injection patterns
+            function checkSQLInjection(input) {
+                const sqlPatterns = [
+                    /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|EXECUTE)\b)/gi,
+                    /(--|;|\/\*|\*\/|xp_|sp_)/gi,
+                    /('|(\\')|(--)|(%27))/gi
+                ];
+                
+                return sqlPatterns.some(pattern => pattern.test(input));
+            }
+
+            // Rate limiting simulation
+            function checkRateLimit() {
+                const attempts = parseInt(sessionStorage.getItem('loginAttempts') || '0');
+                const lastAttempt = parseInt(sessionStorage.getItem('lastAttempt') || '0');
+                const now = Date.now();
+
+                // Reset after 15 minutes
+                if (now - lastAttempt > 900000) {
+                    sessionStorage.setItem('loginAttempts', '0');
+                    return { allowed: true, remaining: 5 };
+                }
+
+                if (attempts >= 5) {
+                    return { allowed: false, remaining: 0 };
+                }
+
+                return { allowed: true, remaining: 5 - attempts };
+            }
+
+            function incrementAttempts() {
+                const attempts = parseInt(sessionStorage.getItem('loginAttempts') || '0');
+                sessionStorage.setItem('loginAttempts', (attempts + 1).toString());
+                sessionStorage.setItem('lastAttempt', Date.now().toString());
+            }
+        
+
+            function showSuccess(inputElement, errorElement) {
+                inputElement.classList.remove('error');
+                inputElement.classList.add('success');
+                errorElement.classList.remove('show');
+            }
+
+            function clearValidation(inputElement, errorElement) {
+                inputElement.classList.remove('error', 'success');
+                errorElement.classList.remove('show');
+            }
+
+            function showNotification(message, type = 'success') {
+                // Remove existing notification
+                const existingNotification = document.querySelector('.notification');
+                if (existingNotification) {
+                    existingNotification.remove();
+                }
+
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                    <div class="notification-icon">${type === 'success' ? '✓' : '⚠'}</div>
+                    <div class="notification-text">${message}</div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Trigger animation
+                setTimeout(() => notification.classList.add('show'), 10);
+                
+                // Auto remove after 4 seconds
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => notification.remove(), 300);
+                }, 4000);
+            }
+
+            function updatePasswordStrength(strength) {
+                const strengthContainer = document.getElementById('passwordStrength');
+                const strengthBar = document.getElementById('strengthBar');
+                
+                if (strength === 0) {
+                    strengthContainer.classList.remove('show');
+                    return;
+                }
+                
+                strengthContainer.classList.add('show');
+                strengthBar.className = 'password-strength-bar';
+                
+                if (strength === 1) {
+                    strengthBar.classList.add('strength-weak');
+                } else if (strength === 2) {
+                    strengthBar.classList.add('strength-medium');
+                } else {
+                    strengthBar.classList.add('strength-strong');
+                }
+            }
+
+            function setLoading(button, loading) {
+                if (loading) {
+                    button.classList.add('loading');
+                    button.disabled = true;
+                } else {
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                }
+            }
+        
+
+        // ========================================
+        // EVENT HANDLERS
+        // ========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize particles
+            createParticles();
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const emailError = document.getElementById('emailError');
+            const passwordError = document.getElementById('passwordError');
+            const loginBtn = document.getElementById('loginBtn');
+            const continueBtn = document.getElementById('continueBtn');
+            const createAccountBtn = document.getElementById('createAccountBtn');
+            const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+            const passwordToggle = document.getElementById('passwordToggle');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+
+
+            // Email input security check
+            emailInput.addEventListener('input', function() {
+                // Clear validation while typing
+                if (this.value === '') {
+                    UIManager.clearValidation(emailInput, emailError);
+                }
+                
+                // Check for SQL injection attempts
+                if (checkSQLInjection(this.value)) {
+                    UIManager.showError(emailInput, emailError, 'Invalid characters detected');
+                }
+            });
+
+            // Password validation and strength meter
+            passwordInput.addEventListener('input', function() {
+                const validation = validatePassword(this.value);
+                
+                if (this.value === '') {
+                    UIManager.clearValidation(passwordInput, passwordError);
+                    UIManager.updatePasswordStrength(0);
+                    return;
+                }
+
+
+                if (!validation.valid) {
+                    UIManager.showError(passwordInput, passwordError, validation.message);
+                } else {
+                    {% comment %} UIManager.showSuccess(passwordInput, passwordError); {% endcomment %}
+                }
+            });
+
+            // Password visibility toggle
+            document.querySelectorAll(".password-toggle").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const input = btn.previousElementSibling;
+
+                    if (!input) return;
+
+                    if (input.type === "password") {
+                        input.type = "text";
+                        btn.textContent = "🙈";
+                    } else {
+                        input.type = "password";
+                        btn.textContent = "👁️";
+                    }
+                });
+            });
+
+            // Smooth focus animations
+            const inputs = [emailInput, passwordInput];
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'scale(1.01)';
+                    this.parentElement.style.transition = 'transform 0.2s ease';
+                });
+
+                input.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'scale(1)';
+                });
+            });
+
+            // Prevent common security vulnerabilities
+            document.addEventListener('paste', function(e) {
+                const target = e.target;
+                if (target.type === 'password') {
+                    // Allow paste for password managers
+                    return;
+                }
+            });
+
+        // ========================================
+        // ADDITIONAL SECURITY MEASURES
+        // ========================================
+        
+        // Prevent context menu on password field
+        document.addEventListener('contextmenu', function(e) {
+            if (e.target.type === 'password') {
+                e.preventDefault();
+            }
+        });
+    });
+    </script>
+</body>
+</html>

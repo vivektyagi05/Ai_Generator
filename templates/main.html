@@ -1,0 +1,1959 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Content Generator - Photos, Stories, Applications & Proposals</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: 
+                linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.6) 100%),
+                url('https://t4.ftcdn.net/jpg/05/52/90/87/240_F_552908744_M2Q4GkAVjqnEEQsyTvTafTiq171JC4Oz.jpg') center center;
+            background-size: cover;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 107, 157, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(55, 66, 250, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(248, 181, 0, 0.1) 0%, transparent 50%);
+            backdrop-filter: blur(2px);
+            z-index: -1;
+            animation: floatingParticles 20s ease infinite;
+        }
+
+        @keyframes floatingParticles {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-10px) rotate(1deg); }
+            50% { transform: translateY(-5px) rotate(-1deg); }
+            75% { transform: translateY(-15px) rotate(0.5deg); }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 25px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .header:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b9d, #3742fa, #f8b500);
+            background-size: 200% 200%;
+            animation: gradientShift 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b9d, #3742fa);
+            color: white;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: all 0.5s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #00f2ff, #5f4eff);
+            color: #000;
+            font-weight: 700;
+            box-shadow: 0 6px 20px rgba(0, 242, 255, 0.6);
+            transform: translateY(-3px);
+        }
+
+
+        .nav-tab:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+        }
+
+        .editor-section {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .editor-section:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 25px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            height: fit-content;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar:hover {
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+
+        .upload-area {
+            border: 3px dashed rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, rgba(255, 107, 157, 0.1), rgba(55, 66, 250, 0.1));
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: all 0.8s;
+        }
+
+        .upload-area:hover::before {
+            left: 100%;
+        }
+
+        .upload-area:hover {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: linear-gradient(45deg, rgba(255, 107, 157, 0.15), rgba(55, 66, 250, 0.15));
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .upload-area.dragover {
+            background: linear-gradient(45deg, rgba(255, 107, 157, 0.2), rgba(55, 66, 250, 0.2));
+            border-color: rgba(255, 255, 255, 0.8);
+            transform: scale(1.05);
+        }
+
+        .preview-container {
+            display: flex;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .preview-box {
+            flex: 1;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+
+        .preview-box:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-area {
+            margin-bottom: 20px;
+        }
+
+        .input-area label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: white;
+        }
+
+        /* All input, textarea, select — Improve clarity + Blur + Glow */
+        .input-area input,
+        .input-area textarea,
+        .input-area select,
+        #codecreator-tab textarea,
+        #codecreator-tab select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.25);
+            background: rgba(255,255,255,0.15);  /* more visible */
+            backdrop-filter: blur(8px);
+            color: #fff;
+            font-size: 15px;
+            transition: 0.3s ease;
+        }
+        /* Language dropdown ONLY */
+        #codecreator-tab #codeLang {
+            width: 220px;
+            height: 42px;
+            padding: 8px 12px;
+            font-size: 14px;
+            min-height: unset;
+        }
+
+        /* Code prompt textarea ONLY */
+        #codecreator-tab #codePrompt {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        /* textarea ka size alag rahe */
+        .input-area textarea,
+        #codecreator-tab textarea {
+            min-height: 120px;
+        }
+
+
+        /* On focus - Glow */
+        .input-area input:focus,
+        .input-area textarea:focus,
+        .input-area select:focus,
+        #codecreator-tab textarea:focus,
+        #codecreator-tab select:focus {
+            border-color: #7bf2ff;
+            background: rgba(255,255,255,0.22);
+            box-shadow: 0 0 15px rgba(123, 242, 255, 0.4);
+            outline: none;
+        }
+
+
+        .output-area {
+            background: rgba(0, 0, 0, 0.45);
+            border: 1.6px solid rgba(255, 255, 255, 0.18);
+            border-radius: 18px;
+            padding: 25px;
+            backdrop-filter: blur(18px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+            color: #f8f9ff; /* Clean soft white */
+            font-size: 16px;
+            line-height: 1.8;
+            max-height: 550px;
+            overflow-y: auto;
+            transition: 0.3s ease;
+        }
+
+        .output-area::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .output-area::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #ff6b9d, #3742fa);
+            border-radius: 10px;
+        }
+
+        .output-area:hover {
+            border-color: rgba(255, 139, 230, 0.6);
+            box-shadow: 0 15px 50px rgba(255, 139, 230, 0.25);
+            transform: scale(1.01);
+        }
+
+        .body-options {
+            margin-bottom: 20px;
+        }
+
+        .body-options h3 {
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .body-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .body-option {
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .body-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: all 0.5s;
+        }
+
+        .body-option:hover::before {
+            left: 100%;
+        }
+
+        .body-option:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .body-option.selected {
+            border-color: rgba(255, 107, 157, 0.8);
+            background: linear-gradient(45deg, rgba(255, 107, 157, 0.3), rgba(55, 66, 250, 0.3));
+            color: white;
+            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.3);
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(45deg, #ff6b9d, #3742fa, #f8b500);
+            background-size: 200% 200%;
+            animation: gradientShift 3s ease infinite;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            margin-bottom: 25px;
+        }
+
+        .generate-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: all 0.5s;
+        }
+
+        .generate-btn:hover::before {
+            left: 100%;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 25px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: white;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .input-area input::placeholder,
+        .input-area textarea::placeholder {
+            color: rgba(255,255,255,0.55);
+            font-weight: 400;
+        }
+
+        .input-area input:focus,
+        .input-area textarea:focus,
+        .input-area select:focus {
+            border-color: #ff7edb;   /* Pink Neon */
+            background: rgba(255, 255, 255, 0.16);
+            box-shadow: 0 0 12px rgba(255, 126, 219, 0.6);
+            outline: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid #ff6b9d;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .content-options {
+            margin-bottom: 20px;
+        }
+
+        .content-options h3 {
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .content-option {
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .content-option:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .content-option.selected {
+            border-color: rgba(255, 107, 157, 0.8);
+            background: linear-gradient(45deg, rgba(255, 107, 157, 0.3), rgba(55, 66, 250, 0.3));
+            color: white;
+            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.3);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .pretty-output h1, 
+        .pretty-output h2, 
+        .pretty-output h3 {
+            color: #ffd369;
+            margin-bottom: 10px;
+        }
+
+        .pretty-output strong {
+            color: #ff6b9d;
+        }
+
+        .pretty-output em {
+            color: #ffeaa7;
+        }
+
+        .pretty-output p {
+            margin-bottom: 10px;
+        }
+
+        .output-area::before {
+            content: "✨ AI Generated Output";
+            display: block;
+            padding-bottom: 12px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #ffdd99;
+            text-align: center;
+        }
+
+        /* Code Creator Styles */
+        #codecreator-tab textarea,
+        #codecreator-tab select {
+            width: 100%;
+            resize: none; 
+            overflow: hidden;          /* 👈 scrollbar nahi */
+            min-height: 100px;
+            line-height: 1.6; 
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border: 1px solid #444;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        #codecreator-tab h2 {
+            color: #fff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #codecreator-tab .generate-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, #ff00cc, #3333ff);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+
+        #codecreator-tab .generate-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 12px rgba(255,255,255,0.4);
+        }
+
+        .pretty-output {
+            background: rgba(20, 20, 20, 0.55);
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 20px;
+            border-radius: 14px;
+            backdrop-filter: blur(12px);
+            color: #e3edff;  /* soft blueish white */
+            font-family: "Fira Code", monospace;
+            font-size: 15px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .code-explain {
+            margin-top: 14px;
+            padding: 16px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            color: #ffffffcc; /* soft white */
+        }
+
+        .code-actions button {
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6ba6, #5f4eff);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+        }
+
+        /* Fix spacing between Quick Action buttons */
+        .sidebar .btn {
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        .sidebar .btn:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Welcome username soft glow */
+        .welcome-text {
+            font-size: 19px;
+            color: #cde7ff;
+            text-shadow: 0 0 12px rgba(0,255,255,0.5);
+            letter-spacing: 0.5px;
+        }
+
+        .tab-title {
+            font-size: 26px;
+            font-weight: 700;
+            color:#fdfdfd;
+            margin-bottom: 20px;
+            text-shadow:0 0 18px rgba(0,255,255,0.4);
+        }
+
+
+        /* FIX for dropdown showing white list */
+        select, .input-area select, #codecreator-tab select {
+            color: #fff !important;
+            background: rgba(0,0,0,0.35) !important;
+            backdrop-filter: blur(12px) !important;
+            z-index: 5;
+        }
+
+        /* When dropdown expands (OPTIONS LIST) */
+        select option {
+            background: #1e1e1e !important;
+            color: #fff !important;
+            padding: 12px;
+            border-bottom: 1px solid #444;
+            font-size: 15px;
+        }
+
+        /* Hover effect on options */
+        select option:hover {
+            background: #333 !important;
+            color: #00f2ff !important;
+        }
+
+        select::-ms-expand {
+            display: none;
+        }
+
+        select:focus {
+            outline: none;
+            border: 2px solid #00ffe7 !important;
+            box-shadow: 0 0 10px rgba(0,255,231,0.5);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-text {
+            background: linear-gradient(45deg, #ff6b9d, #3742fa, #f8b500);
+            background-size: 200% 200%;
+            animation: gradientShift 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent; /* Fallback */
+        }
+
+        #codecreator-tab .input-area label {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        #codecreator-tab .output-area::before {
+            content: "✨ AI Generated Code";
+            display: block;
+            padding-bottom: 12px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #ffdd99;
+            text-align: center;
+        }
+
+
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .preview-container {
+                flex-direction: column;
+            }
+
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- ================= HEADER ================= -->
+        <div class="header">
+            <div class="logo">
+                <span class="logo-text">AI Content Generator</span>
+            </div>
+
+            <!-- AUTH BUTTONS (DYNAMIC) -->
+            <div class="auth-buttons">
+
+                {% if user.is_authenticated %}
+                    <div class="welcome-text">
+                        👋 Hi, {{ request.user.first_name|default:request.user.username }}
+                    </div>
+                    <a href="/profile/" class="btn btn-secondary">👤 Profile</a>
+                    <a href="/history/" class="btn btn-secondary">📜 History</a>
+                    <a href="/logout/" class="btn btn-primary">Logout</a>
+                {% else %}
+                    <a href="/login/" class="btn btn-secondary">Login</a>
+                    <a href="/signup/" class="btn btn-primary">Sign Up</a>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <!-- =============== NAVIGATION TABS =============== -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('photo', this)">📷 Photo Editor</button>
+            <button class="nav-tab" onclick="switchTab('story', this)">📚 Story Generator</button>
+            <button class="nav-tab" onclick="switchTab('application', this)">📄 Application Writer</button>
+            <button class="nav-tab" onclick="switchTab('proposal', this)">💼 Proposal Maker</button>
+            <button class="nav-tab" onclick="switchTab('codecreator', this)">💻 Code Creator</button>
+        </div>
+
+        <!-- ========== CODE CREATOR TAB ========== -->
+        <div class="tab-content" id="codecreator-tab">
+            <h2 style="color:white; text-align:center; margin-bottom:20px;">💻 AI Code Creator</h2>
+
+            <div class="input-area">
+                <label style="color:white;">Language:</label>
+                <select id="codeLang">
+                    <option value="javascript">JavaScript</option>
+                    <option value="python">Python</option>
+                    <option value="html">HTML/CSS</option>
+                    <option value="cpp">C++</option>
+                    <option value="java">Java</option>
+                    <option value="sql">SQL</option>
+                </select>
+            </div>
+
+            <div class="input-area">
+                <label style="color:white;">Your Requirement:</label>
+                <textarea
+                    id="codePrompt"
+                    placeholder="Describe what code you want..."
+                    oninput="autoResize(this)"
+                ></textarea>
+            </div>
+            <div class="body-options" style="margin-top:15px;">
+                <h3>Quick Actions</h3>
+
+                <button class="btn btn-primary" onclick="downloadGeneratedCode()">💾 Download</button>
+                <button class="btn btn-secondary" onclick="copyGeneratedCode()">📋 Copy</button>
+                <button class="btn btn-secondary" onclick="resetCodeGenerator()">🔄 Reset</button>
+            </div>
+
+
+                <button class="generate-btn" onclick="generateCode(event)">Generate Code</button>
+
+            <div id="codeOutput" class="output-area" style="margin-top:25px;">
+                <p style="color:#ffffff80; text-align:center;">✨ AI code output will appear here...</p>
+            </div>
+        </div>
+
+
+
+        <!-- ================= PHOTO EDITOR ================= -->
+        <div id="photo-tab" class="tab-content active">
+            <div class="main-content">
+
+                <div class="editor-section">
+                    <h2 class="tab-title">AI Photo Generator</h2>
+
+                    <div class="input-area">
+                        <label>Describe your image</label>
+                        <textarea
+                            id="imagePrompt"
+                            placeholder="e.g. A cyberpunk warrior, neon lights, rain, cinematic lighting"
+                        ></textarea>
+                    </div>
+
+                    <button class="generate-btn" id="generateBtn" onclick="generateImage()">
+                        🚀 Generate AI Photo
+                    </button>
+
+                    <div id="generatedPreview" class="output-area" style="margin-top:20px; text-align:center;">
+                        <p>Image will appear here...</p>
+                    </div>
+
+                </div>
+
+                <div class="sidebar">
+                    <div class="body-options">
+                        <h3>Quick Actions</h3>
+                        <button class="btn btn-primary" onclick="downloadImage()">💾 Download</button>
+                        <button class="btn btn-secondary" onclick="shareImage()">📤 Share</button>
+                        <button class="btn btn-secondary" onclick="resetEditor()">🔄 Reset</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================= STORY GENERATOR ================= -->
+        <div id="story-tab" class="tab-content">
+
+            <div class="main-content">
+
+                <div class="editor-section">
+                    <h2 class="tab-title"> AI Story Generator</h2>
+
+
+                    <div class="input-area">
+                        <label>Story Topic</label>
+                        <input type="text" id="storyTopic" placeholder="e.g. Friendship, Adventure, Magic School">
+                    </div>
+
+                    <div class="input-area">
+                        <label>Characters</label>
+                        <input type="text" id="storyCharacters" placeholder="e.g. Raju, fairy, talking dog">
+                    </div>
+
+                    <div class="input-area">
+                        <label>Length</label>
+                        <select id="storyLength">
+                            <option value="short">Short</option>
+                            <option value="medium">Medium</option>
+                            <option value="long">Long</option>
+                        </select>
+                    </div>
+
+                    <div class="input-area">
+                        <label>Additional Details</label>
+                        <textarea id="storyDetails" placeholder="Any special twist, emotion, or message you want in the story..."></textarea>
+                    </div>
+
+                    <button class="generate-btn" onclick="generateStory(event)">✨ Generate Story</button>
+
+                    <div class="output-area" id="storyOutput">
+                        <p>Your generated story will appear here...</p>
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <div class="body-options">
+                        <h3>Quick Actions</h3>
+                        <button class="btn btn-primary" onclick="downloadStory()">💾 Download Story</button>
+                        <button class="btn btn-secondary" onclick="shareStory()">📤 Share Story</button>
+                        <button class="btn btn-secondary" onclick="resetStory()">🔄 Reset</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================= APPLICATION WRITER ================= -->
+        <div id="application-tab" class="tab-content">
+
+            <div class="main-content">
+
+                <div class="editor-section">
+                    <h2 class="tab-title">📝 Application Writer</h2>
+
+
+                    <div class="input-area">
+                        <label>Application Type</label>
+                        <select id="applicationType">
+                            <option value="job">Job Application</option>
+                            <option value="college">College Admission</option>
+                            <option value="scholarship">Scholarship Application</option>
+                            <option value="leave">Leave Application</option>
+                            <option value="complaint">Complaint Application</option>
+                            <option value="transfer">Transfer Request</option>
+                        </select>
+                    </div>
+
+                    <div class="input-area">
+                        <label>Your Name</label>
+                        <input type="text" id="applicantName" placeholder="e.g. Vivek Tyagi...">
+                    </div>
+
+                    <div class="input-area">
+                        <label>Purpose / Position</label>
+                        <input type="text" id="applicationPurpose" placeholder="e.g. Leave for medical reason">
+                    </div>
+
+                    <div class="input-area">
+                        <label>Recipient Name/Organization</label>
+                        <input type="text" id="recipientName" placeholder="e.g. The Principal, ABC College">
+                    </div>
+
+                    <div class="input-area">
+                        <label>Your Reason/Details</label>
+                        <textarea id="applicationReason" placeholder="Explain your reason clearly and politely..."></textarea>
+                    </div>
+
+                    <div class="input-area">
+                        <label>Additional Info (Optional)</label>
+                        <textarea id="applicationDetails" placeholder="Optional: dates, documents, extra explanation..."></textarea>
+                    </div>
+
+                    <button class="generate-btn" onclick="generateApplication(event)">📝 Generate Application</button>
+
+                    <div class="output-area" id="applicationOutput">
+                        <p>Your generated application will appear here...</p>
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <div class="body-options">
+                        <h3>Quick Actions</h3>
+                        <button class="btn btn-primary" onclick="downloadApplication()">💾 Download</button>
+                        <button class="btn btn-secondary" onclick="shareApplication()">📤 Share</button>
+                        <button class="btn btn-secondary" onclick="resetApplication()">🔄 Reset</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+
+        <!-- ================= PROPOSAL MAKER ================= -->
+        <div id="proposal-tab" class="tab-content">
+
+            <div class="main-content">
+
+                <div class="editor-section">
+                    <h2 class="tab-title">📑 AI Proposal Maker</h2>
+
+
+                    <div class="input-area">
+                        <label>Proposal Type</label>
+                        <select id="proposalType">
+                            <option value="business">Business Proposal</option>
+                            <option value="project">Project Proposal</option>
+                            <option value="research">Research Proposal</option>
+                            <option value="marketing">Marketing Proposal</option>
+                            <option value="partnership">Partnership Proposal</option>
+                            <option value="investment">Investment Proposal</option>
+                        </select>
+                    </div>
+
+                    <div class="input-area">
+                        <label>Proposal Title</label>
+                        <input type="text" id="proposalTitle" placeholder="e.g. AI Based Attendance System">
+                    </div>
+
+                    <div class="input-area">
+                        <label>Target Audience/Client</label>
+                        <input type="text" id="proposalAudience" placeholder="e.g. College Management / Client Name">
+                    </div>
+
+                    <div class="input-area">
+                        <label>Main Objective</label>
+                        <textarea id="proposalObjective" placeholder="What is the main goal of this proposal?"></textarea>
+                    </div>
+
+                    <div class="input-area">
+                        <label>Key Points / Benefits</label>
+                        <textarea id="proposalBenefits" placeholder="Key benefits, advantages, outcomes..."></textarea>
+                    </div>
+
+                    <div class="input-area">
+                        <label>Budget / Timeline (Optional)</label>
+                        <input type="text" id="proposalBudget" placeholder="e.g. ₹25,000 or 3 months timeline">
+                    </div>
+
+                    <div class="input-area">
+                        <label>Additional Details</label>
+                        <textarea id="proposalDetails" placeholder="Any additional technical or business details..."></textarea>
+                    </div>
+
+                    <button class="generate-btn" onclick="generateProposal(event)">💼 Generate Proposal</button>
+
+                    <div class="output-area" id="proposalOutput">
+                        <p>Your generated proposal will appear here...</p>
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <div class="content-options">
+                        <h3>Proposal Styles</h3>
+                        <div class="content-grid">
+                            <div class="content-option" onclick="selectProposalStyle('professional')">💼 Professional</div>
+                            <div class="content-option" onclick="selectProposalStyle('creative')">🎨 Creative</div>
+                            <div class="content-option" onclick="selectProposalStyle('technical')">⚙️ Technical</div>
+                            <div class="content-option" onclick="selectProposalStyle('executive')">👔 Executive Summary</div>
+                        </div>
+                    </div>
+
+                    <div class="body-options">
+                        <h3>Quick Actions</h3>
+                        <button class="btn btn-primary" onclick="downloadProposal()">💾 Download Proposal</button>
+                        <button class="btn btn-secondary" onclick="shareProposal()">📤 Share Proposal</button>
+                        <button class="btn btn-secondary" onclick="resetProposal()">🔄 Reset</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+<script>
+        const CSRF_TOKEN = '{{ csrf_token }}';
+
+
+        // Tab Switching
+        function switchTab(tabName, btn) {
+        // hide all tabs
+        document.querySelectorAll('.tab-content').forEach(t => {
+            t.classList.remove('active');
+        });
+
+        // remove active from all nav buttons
+        document.querySelectorAll('.nav-tab').forEach(b => {
+            b.classList.remove('active');
+        });
+
+        // show selected tab
+        const tab = document.getElementById(tabName + "-tab");
+        if (tab) tab.classList.add('active');
+
+        // highlight clicked button
+        if (btn) btn.classList.add('active');
+    }
+
+
+
+
+        const IS_AUTHENTICATED = {{ request.user.is_authenticated|yesno:"true,false" }};
+
+        function saveHistorySafe(query, response) {
+            if (!IS_AUTHENTICATED) return;  // ❌ without login = no history
+
+            fetch("/save_history/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": CSRF_TOKEN
+                },
+                body: JSON.stringify({
+                    query: query,
+                    response: response
+                })
+            }).catch(err => {
+                console.error("History save failed:", err);
+            });
+        }
+
+
+
+
+        // ========== GLOBAL VARIABLES ==========
+                    // ========== MAIN FUNCTION ==========
+        async function generateCode() {
+                        const lang = document.getElementById("codeLang").value;
+                        const promptText = document.getElementById("codePrompt").value.trim();
+                        const outputDiv = document.getElementById("codeOutput");
+
+                        if (!promptText) {
+                            alert("Please enter what code you want!");
+                            return;
+                        }
+
+                        outputDiv.innerHTML = "<div class='loading'>⏳ Generating Code...</div>";
+
+                        const languageTag = {
+                            python: "python",
+                            javascript: "javascript",
+                            html: "html",
+                            cpp: "cpp",
+                            java: "java",
+                            sql: "sql"
+                        }[lang] ;
+
+                        const finalPrompt = `
+                        You are a senior software engineer.
+
+                        IMPORTANT:
+                        You MUST write the solution strictly in ${lang.toUpperCase()} language.
+                        Do NOT use any other programming language.
+
+                        Task:
+                        ${promptText}
+
+                        Return response in this exact format:
+
+                        1. CODE:
+                        Provide only one clean, complete, runnable ${lang.toUpperCase()} code block.
+
+                        2. EXPLANATION (Simple):
+                        Explain in very easy language using max 3 bullet points.
+
+                        Rules:
+                        • Use ONLY ${lang.toUpperCase()}
+                        • No extra text
+                        • Beginner friendly
+                        `;
+
+
+
+                        try {
+                            const response = await fetch("/api/ai/", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ prompt: finalPrompt })
+                            });
+
+                            if (!response.ok) {
+                                outputDiv.innerHTML = `<span style='color:red;font-weight:bold;'>❌ API Error: ${response.status}</span>`;
+                                return;
+                            }
+
+                            const data = await response.json();
+                            const rawText = data.result;
+
+
+                            // Extract code block
+                            const codeBlockRegex = /```(?:[a-zA-Z0-9+\-]*)\n([\s\S]*?)```/;
+                            const match = rawText.match(codeBlockRegex);
+                            const codeOnly = match?.[1]?.trim() || rawText;
+
+                            // Extract explanation
+                            let explanation = "";
+                            if (match) {
+                                explanation = rawText.replace(match[0], "").trim();
+                            }
+
+                            // Render final output
+                            outputDiv.innerHTML = `
+                                <div class="code-actions" style="display:flex; gap:10px; margin-bottom:12px;">
+                                    <button class="btn-primary" id="copyCodeBtn">📋 Copy Code</button>
+                                    <button class="btn-secondary" id="downloadCodeBtn">⬇️ Download</button>
+                                </div>
+
+                                <pre class="pretty-output" id="generatedCode">${escapeHtml(codeOnly)}</pre>
+
+                                <div class="code-explain">
+                                    ${escapeHtml(explanation).replace(/\n/g, "<br>")}
+                                </div>
+                            `;
+
+                            // Copy code
+                            document.getElementById("copyCodeBtn").onclick = () => {
+                                copyTextToClipboard(codeOnly);
+                                document.getElementById("copyCodeBtn").innerText = "✓ Copied!";
+                                setTimeout(() => {
+                                    document.getElementById("copyCodeBtn").innerText = "📋 Copy Code";
+                                }, 1500);
+                            };
+
+                            // Download code
+                            document.getElementById("downloadCodeBtn").onclick = () => {
+                                const ext = {
+                                    python: "py",
+                                    javascript: "js",
+                                    html: "html",
+                                    cpp: "cpp",
+                                    java: "java",
+                                    sql: "sql"
+                                }[lang] || "txt";
+
+                                const file = new Blob([codeOnly], { type: "text/plain" });
+                                const link = document.createElement("a");
+                                link.href = URL.createObjectURL(file);
+                                link.download = `ai_code_${Date.now()}.${ext}`;
+                                link.click();
+                            };
+
+                            // Save history
+                            saveHistorySafe(
+                                "Code Creation (" + lang + ") - " + promptText,
+                                rawText
+                            );
+
+
+                        } catch (e) {
+                            if (!response.ok) {
+                                outputDiv.innerHTML = `
+                                    <span style="color:#ffb703;font-weight:bold;">
+                                    ⚠️ AI is busy. Please try again in a few seconds.
+                                    </span>`;
+                                return;
+                            }
+
+                        }
+                        
+                    }
+
+                function downloadGeneratedCode() {
+                    const code = document.getElementById("generatedCode")?.innerText;
+                    if (!code) return alert("Generate code first!");
+
+                    const blob = new Blob([code], { type: "text/plain" });
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = "ai_code.txt";
+                    link.click();
+                }
+
+                function copyGeneratedCode() {
+                    const code = document.getElementById("generatedCode")?.innerText;
+                    if (!code) return alert("Generate code first!");
+                    navigator.clipboard.writeText(code);
+                }
+
+                function resetCodeGenerator() {
+                    document.getElementById("codePrompt").value = "";
+                    document.getElementById("codeOutput").innerHTML =
+                        "<p style='color:#ffffff80;text-align:center;'>✨ AI code output will appear here...</p>";
+                }
+
+                                
+
+                // ========== HELPERS ==========
+                function escapeHtml(text) {
+                    if (!text) return "";
+                    return text.replace(/&/g, "&amp;")
+                            .replace(/</g, "&lt;")
+                            .replace(/>/g, "&gt;");
+                }
+
+                function copyTextToClipboard(text) {
+                    navigator.clipboard.writeText(text);
+                }
+
+
+                document.querySelectorAll(".body-option").forEach(opt => {
+                    opt.addEventListener("click", () => {
+                        document.querySelectorAll(".body-option").forEach(o => o.classList.remove("selected"));
+                        opt.classList.add("selected");
+                        selectedBody = opt.getAttribute("data-body");
+                    });
+                });
+
+        async function generateImage() {
+                const promptInput = document.getElementById("imagePrompt");
+                const prompt = promptInput.value.trim();
+
+                if (!prompt) {
+                    alert("Please describe the image!");
+                    return;
+                }
+
+                const imageUrl =
+                    `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&model=flux`;
+
+                document.getElementById("generatedPreview").innerHTML =
+                    `<img src="${imageUrl}" class="preview-image">`;
+
+                const btn = document.getElementById("generateBtn");
+                btn.innerText = "✅ Generated";
+                btn.disabled = true;
+
+                saveHistorySafe(
+                    "Photo Prompt: " + prompt,
+                    imageUrl
+                );
+
+            }
+
+
+
+
+            function downloadImage() {
+                const generatedImg = document.querySelector('#generatedPreview img');
+                if (generatedImg) {
+                    const link = document.createElement('a');
+                    link.download = 'ai-generated-photo.png';
+                    link.href = generatedImg.src;
+                    link.click();
+                } else {
+                    alert('पहले image generate करें!');
+                }
+         }
+
+            function shareImage() {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'AI Generated Photo',
+                        text: 'Check out my AI generated photo!',
+                        url: window.location.href
+                    });
+                } else {
+                    alert('Share feature is not supported on this device');
+                }
+            }
+
+            function resetEditor() {
+                document.getElementById("imagePrompt").value = "";
+                document.getElementById("generatedPreview").innerHTML =
+                    "<p>Image will appear here...</p>";
+
+                const generateBtn = document.getElementById("generateBtn");
+                generateBtn.innerText = "🚀 Generate AI Photo";
+                generateBtn.disabled = false;
+            }
+
+
+
+        
+    // Story Generator Functions
+        function selectStoryType(type) {
+            document.querySelectorAll('#story-tab .content-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            currentStoryType = type;
+            document.getElementById('storyTopic').value = type.charAt(0).toUpperCase() + type.slice(1);
+        }
+
+        async function generateStory(event) {
+            event && event.preventDefault && event.preventDefault();
+            // 1. User input लो
+            const topic = document.getElementById('storyTopic').value.trim();
+            const characters = document.getElementById('storyCharacters').value.trim();
+            const length = document.getElementById('storyLength').value; // short/medium/long
+            const details = document.getElementById('storyDetails').value.trim();
+
+            if (!topic || !characters) {
+                alert("All fields except 'Additional Details' are required!");
+                return;
+            }
+            const btn = event?.target || document.querySelector('.tab-content.active .generate-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<div class="spinner"></div>Generating Story...`;
+
+            // 2. Prompt तैयार करो
+            // ---- THIS IS THE MAIN CHANGE ----
+            let prompt = `
+            You are a MASTER children's storyteller.
+
+            Write a highly creative, fun, emotional, cinematic-quality story in Hinglish (Hindi + simple English mix). 
+            Use natural Indian storytelling style, layered emotions, dramatic moments, and smooth flow.
+
+            IMPORTANT:
+            • Do NOT write in the rigid school/competition format (NO Characters:, Setting:, Plot:, etc.)
+            • Instead write as a natural, flowing story that kids enjoy.
+            • Use vivid sensory descriptions, sounds, feelings, fun dialogues, and expressive characters.
+            • Add emojis naturally in the right places (maximum 10–12).
+            • Make it entertaining, not academic.
+
+            USER INPUT:
+            • Theme: "${topic}"
+            • Characters: ${characters}
+            ${details ? "• Extra details: " + details : ""}
+
+            STORY GUIDELINES:
+            • Start with a beautiful, cinematic 1–2 line hook.
+            • Describe characters in a fun way while telling the story.
+            • Build tension and excitement before the climax.
+            • Climax must feel dramatic and emotional.
+            • Ending must feel warm and satisfying.
+            • After the story, add a short, clear, inspiring message for kids (2 lines max).
+
+            Tone:
+            • Friendly, playful, emotional, and imaginative.
+            • Hinglish with simple Hindi words (kid-friendly).
+            • Let the kids feel joy, surprise, wonder, and learning.
+
+            Output Format:
+            • Title (fun and creative)
+            • Full story (flowing paragraphs, not sections)
+            • Message/Moral (2 lines)
+            `;
+
+
+
+            // 3. AI API call करो
+            try {
+                const response = await fetch("/api/ai/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+                const storyText = data.result
+                    .replace(/[#*`]/g, "")
+                    .replace(/\n{3,}/g, "\n\n");
+
+
+                document.getElementById('storyOutput').innerHTML = `
+                <div class="pretty-output">${storyText}</div>
+                `;
+
+
+                saveHistorySafe(
+                    "Story: " + topic,
+                    storyText
+                );
+
+                btn.disabled = false;
+                btn.innerHTML = "Generate Story";
+                alert("Story successfully generated!");
+            } catch (err) {
+                document.getElementById('storyOutput').innerHTML = `<span style="color:red; font-weight:bold;">Error: ${err.message}</span>`;
+                btn.disabled = false;
+                btn.innerHTML = "Generate Story";
+                alert("Failed to generate story!\n" + err.message);
+            }
+           }
+
+
+
+            function downloadStory() {
+                const story = document.getElementById('storyOutput').innerText;
+                if (story && story !== 'Your generated story will appear here...') {
+                    const blob = new Blob([story], { type: 'text/plain' });
+                    const link = document.createElement('a');
+                    link.download = 'ai-generated-story.txt';
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                } else {
+                    alert('पहले story generate करें!');
+                }
+            }
+
+            function shareStory() {
+                const story = document.getElementById('storyOutput').innerText;
+                if (story && navigator.share) {
+                    navigator.share({
+                        title: 'My AI Generated Story',
+                        text: story.substring(0, 200) + '...'
+                    });
+                } else {
+                    alert('पहले story generate करें या share feature supported नहीं है!');
+                }
+            }
+
+            function resetStory() {
+                document.getElementById('storyTopic').value = '';
+                document.getElementById('storyCharacters').value = '';
+                document.getElementById('storyDetails').value = '';
+                document.getElementById('storyOutput').innerHTML = '<p>Your generated story will appear here...</p>';
+                document.querySelectorAll('#story-tab .content-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+            }
+
+        // Application Writer Functions
+        async function generateApplication(event) {
+            event && event.preventDefault && event.preventDefault();
+            const type = document.getElementById('applicationType').value;              // Job | Leave etc
+            const name = document.getElementById('applicantName').value.trim();
+            const purpose = document.getElementById('applicationPurpose').value.trim();
+            const recipient = document.getElementById('recipientName').value.trim();
+            const reason = document.getElementById('applicationReason').value.trim();
+            const details = document.getElementById('applicationDetails').value.trim();
+
+            if (!name || !purpose || !recipient || !reason) {
+                alert('कृपया सभी required fields भरें!');
+                return;
+            }
+
+            const btn = event?.target || document.querySelector('.tab-content.active .generate-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div>Generating Application...';
+
+            // Gemini AI prompt in Hindi/Hinglish
+            let prompt = "";
+
+            if (
+            details.toLowerCase().includes("hindi") ||
+            details.toLowerCase().includes("हिन्दी") ||
+            details.toLowerCase().includes("हिंदी")
+            ) {
+            // Force Hindi/Hinglish format
+            prompt = `
+            Write a formal application letter in Hindi or Hinglish (whichever matches the 'additional info' user input), using the following format:
+
+            सेवा में,
+            [Recipient’s Designation],
+            [Organization/Institution Name],
+            [Address].
+
+            दिनांक: [DD/MM/YYYY]
+
+            विषय (Subject): [One-line purpose of application]
+
+            आदरणीय सर/मैम,
+
+            [Letter body: state purpose and reason clearly, 2–3 lines.]
+
+            कृपया मेरी प्रार्थना स्वीकार करें।
+
+            धन्यवाद।
+
+            आपका/आपकी [obliged/faithfully],
+            [Your Full Name]
+            [Your Class/Department/Designation, if any]
+            [Roll No./Employee ID, if any]
+            [Contact no. if given]
+
+            User Input:
+            Applicant name: ${name}
+            Recipient: ${recipient}
+            Purpose/position: ${purpose}
+            Reason: ${reason}
+            ${details ? 'Extra details: ' + details : ''}
+            Today’s date: ${new Date().toLocaleDateString('hi-IN')}
+            Fill all sections and write the body in simple and polite Hindi, using the above format, and add respect at end.
+            `;
+            } else {
+            // Default: English format
+            prompt = `
+            Write a formal application letter in English, using the following format:
+
+            To
+            The [Recipient’s Designation],
+            [Organization/Institution Name],
+            [Address].
+
+            Date: [DD/MM/YYYY]
+
+            Subject: [One-line purpose of application]
+
+            Respected Sir/Ma’am,
+
+            Through this letter, I would like to [state purpose clearly].
+            [Explain reason briefly – 2–3 sentences].
+            Kindly consider my request and grant me permission for the same.
+
+            Thanking you,
+
+            Yours obediently/sincerely,
+            [Your Full Name]
+            [Your Class/Department/Designation, if any]
+            [Roll No./Employee ID, if any]
+            [Contact no. if given]
+
+            User Input:
+            Applicant name: ${name}
+            Recipient: ${recipient}
+            Purpose/position: ${purpose}
+            Reason: ${reason}
+            ${details ? 'Extra details: ' + details : ''}
+            Today’s date: ${new Date().toLocaleDateString('en-IN')}
+            Ensure the content fits the above format, is respectful and concise, and fill all details from user input.
+            `;
+            }
+
+            try {
+                const response = await fetch("/api/ai/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+                const applicationText = data.result
+                    .replace(/[#*`]/g, "")
+                    .replace(/\n{3,}/g, "\n\n");
+
+
+                document.getElementById('applicationOutput').innerHTML =
+                    `<pre class="pretty-output">${applicationText}</pre>`;
+
+                saveHistorySafe(
+                    "Application: " + purpose,
+                    applicationText
+                );
+
+                btn.disabled = false;
+                btn.innerHTML = '📝 Generate Application';
+                alert('Application successfully generated! 🎉');
+            } catch (err) {
+                document.getElementById('applicationOutput').innerHTML = `<span style="color:red; font-weight:bold;">Error: ${err.message}</span>`;
+                btn.disabled = false;
+                btn.innerHTML = '📝 Generate Application';
+                alert('Failed to generate application!\n' + err.message);
+            }
+         }
+
+
+            function downloadApplication() {
+                const application = document.getElementById('applicationOutput').innerText;
+                if (application && application !== 'Your generated application will appear here...') {
+                    const blob = new Blob([application], { type: 'text/plain' });
+                    const link = document.createElement('a');
+                    link.download = 'application.txt';
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                } else {
+                    alert('पहले application generate करें!');
+                }
+            }
+
+            function shareApplication() {
+                const application = document.getElementById('applicationOutput').innerText;
+                if (application && navigator.share) {
+                    navigator.share({
+                        title: 'My Application',
+                        text: application
+                    });
+                } else {
+                    alert('पहले application generate करें या share feature supported नहीं है!');
+                }
+            }
+
+            function resetApplication() {
+                document.getElementById('applicantName').value = '';
+                document.getElementById('applicationPurpose').value = '';
+                document.getElementById('recipientName').value = '';
+                document.getElementById('applicationReason').value = '';
+                document.getElementById('applicationDetails').value = '';
+                document.getElementById('applicationOutput').innerHTML = '<p>Your generated application will appear here...</p>';
+                document.querySelectorAll('#application-tab .content-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+            }
+
+        // Proposal Maker Functions
+        function selectProposalStyle(style) {
+            document.querySelectorAll('#proposal-tab .content-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            currentProposalStyle = style;
+        }
+
+        async function generateProposal(event) {
+            event && event.preventDefault && event.preventDefault();
+            const type = document.getElementById('proposalType').value; // Business Proposal or Academic/Other
+            const title = document.getElementById('proposalTitle').value.trim();
+            const audience = document.getElementById('proposalAudience').value.trim();
+            const objective = document.getElementById('proposalObjective').value.trim();
+            const keyPoints = document.getElementById('proposalBenefits').value.trim();
+            const budget = document.getElementById('proposalBudget').value.trim();
+            const details = document.getElementById('proposalDetails').value.trim();
+
+            if (!type || !title || !audience || !objective || !keyPoints) {
+                alert('Please fill all the required fields.');
+                return;
+            }
+
+            const btn = event?.target || document.querySelector('.tab-content.active .generate-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div>Generating Proposal...';
+
+            // Format prompt based on type (see A above)
+            let formatPrompt = "";
+            if (type.toLowerCase().includes("business") || type.toLowerCase().includes("project")) {
+            // Business/Project Proposal
+            formatPrompt = `
+            Write a professional business/project proposal using the following structure:
+            1. Cover Page (title, your organization/team)
+            2. Executive Summary (short overview of WHAT, WHY, FOR WHOM)
+            3. Problem Statement (describe the main problem/challenge)
+            4. Proposed Solution / Idea (explain your idea to solve the problem)
+            5. Objectives and Scope (goals, intended outcomes)
+            6. Implementation Plan (steps, phases, how it’ll be done)
+            7. Budget and Resources (cost estimate, manpower, material)
+            8. Expected Results (what will be achieved)
+            9. Conclusion (close with a motivating message)
+
+            User Input:
+            - Proposal Title: ${title}
+            - Audience/Client: ${audience}
+            - Main Objective: ${objective}
+            - Key Benefits: ${keyPoints}
+            - Budget/Timeline: ${budget}
+            - Other Details: ${details}
+
+            Fill all sections, use clear headings. Keep the language formal and easy to understand.
+            `;
+            } else {
+            // Academic/Board/College Proposal (CBSE format)
+            formatPrompt = `
+            Write an official proposal as per academic/board/college format using these sections:
+            1. Title of Proposal (centered)
+            2. Objective / Purpose (why it’s needed)
+            3. Need and Importance (explain the requirement)
+            4. Details of Plan / Steps (what will be done, when, who participates, materials if any)
+            5. Expected Outcome / Benefits (results, improvements, impact)
+
+            User Input:
+            - Proposal Title: ${title}
+            - Audience/Client: ${audience}
+            - Main Objective: ${objective}
+            - Key Benefits: ${keyPoints}
+            - Budget/Timeline: ${budget}
+            - Other Details: ${details}
+
+            Use clear headings and bullet points where helpful.
+            Respond using only the above format.
+            `;
+            }
+
+
+            try {
+                const response = await fetch("/api/ai/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt: formatPrompt })
+            });
+
+            const data = await response.json();
+            const proposalText = data.result
+                .replace(/[#*`]/g, "")
+                .replace(/\n{3,}/g, "\n\n");
+
+
+            document.getElementById('proposalOutput').innerHTML =
+                `<pre class="pretty-output">${proposalText}</pre>`;
+
+            saveHistorySafe(
+                "Proposal: " + title,
+                proposalText
+            );
+
+                btn.disabled = false;
+                btn.innerHTML = '📄 Generate Proposal';
+                alert('Proposal generated successfully!');
+            } catch (err) {
+                document.getElementById('proposalOutput').innerHTML = `<span style="color:red; font-weight:bold;">Error: ${err.message}</span>`;
+                btn.disabled = false;
+                btn.innerHTML = '📄 Generate Proposal';
+                alert('Failed to generate proposal!\n' + err.message);
+            }
+         }
+
+
+            function downloadProposal() {
+                const proposal = document.getElementById('proposalOutput').innerText;
+                if (proposal && proposal !== 'Your generated proposal will appear here...') {
+                    const blob = new Blob([proposal], { type: 'text/plain' });
+                    const link = document.createElement('a');
+                    link.download = 'proposal.txt';
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                } else {
+                    alert('पहले proposal generate करें!');
+                }
+            }
+
+            function shareProposal() {
+                const proposal = document.getElementById('proposalOutput').innerText;
+                if (proposal && navigator.share) {
+                    navigator.share({
+                        title: document.getElementById('proposalTitle').value,
+                        text: proposal.substring(0, 200) + '...'
+                    });
+                } else {
+                    alert('पहले proposal generate करें या share feature supported नहीं है!');
+                }
+            }
+
+            function resetProposal() {
+                document.getElementById('proposalTitle').value = '';
+                document.getElementById('proposalAudience').value = '';
+                document.getElementById('proposalObjective').value = '';
+                document.getElementById('proposalBenefits').value = '';
+                document.getElementById('proposalBudget').value = '';
+                document.getElementById('proposalDetails').value = '';
+                document.getElementById('proposalOutput').innerHTML = '<p>Your generated proposal will appear here...</p>';
+                document.querySelectorAll('#proposal-tab .content-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+            }
+
+
+
+
+        function autoResize(textarea) {
+            textarea.style.height = "auto";
+            textarea.style.height = textarea.scrollHeight + "px";
+        }
+
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+

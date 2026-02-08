@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Account</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2C3E50;
+            --accent: #E67E22;
+            --success: #27AE60;
+            --error: #E74C3C;
+            --bg-light: #FAF8F5;
+            --bg-card: #FFFFFF;
+            --text-primary: #1A1A1A;
+            --text-secondary: #6B7280;
+            --border: #E5E7EB;
+            --shadow: rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, var(--bg-light) 0%, #FFF5EB 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 70%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(230, 126, 34, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 50%;
+            height: 80%;
+            background: radial-gradient(circle, rgba(44, 62, 80, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            animation: float 25s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-30px, 30px) scale(1.05); }
+        }
+
+        .container {
+            max-width: 480px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 48px 40px;
+            box-shadow: 
+                0 4px 6px var(--shadow),
+                0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .icon-wrapper {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, var(--accent) 0%, #D35400 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(230, 126, 34, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .icon-wrapper svg {
+            width: 36px;
+            height: 36px;
+            stroke: white;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        h1 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .email-display {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .otp-form {
+            margin-bottom: 32px;
+        }
+
+        .otp-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .otp-inputs {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .otp-input {
+            width: 56px;
+            height: 64px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--bg-light);
+            outline: none;
+            caret-color: var(--accent);
+        }
+
+        .otp-input:focus {
+            border-color: var(--accent);
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(230, 126, 34, 0.2);
+        }
+
+        .otp-input.filled {
+            border-color: var(--success);
+            background: rgba(39, 174, 96, 0.05);
+        }
+
+        .otp-input.error {
+            border-color: var(--error);
+            background: rgba(231, 76, 60, 0.05);
+            animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .error-message {
+            color: var(--error);
+            font-size: 14px;
+            text-align: center;
+            margin-top: 16px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+        }
+
+        .error-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .verify-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, #1A252F 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .verify-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .verify-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+        }
+
+        .verify-btn:hover::before {
+            left: 100%;
+        }
+
+        .verify-btn:active {
+            transform: translateY(0);
+        }
+
+        .verify-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .verify-btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .verify-btn.loading span {
+            opacity: 0;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 32px 0;
+            opacity: 0.5;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider span {
+            padding: 0 16px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .resend-section {
+            text-align: center;
+        }
+
+        .resend-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .resend-btn {
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .resend-btn:hover {
+            background: rgba(230, 126, 34, 0.1);
+        }
+
+        .resend-btn:disabled {
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+
+        .timer {
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        .back-link a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-link a:hover {
+            color: var(--primary);
+        }
+
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .success-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .success-content {
+            text-align: center;
+            animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            box-shadow: 0 8px 24px rgba(39, 174, 96, 0.3);
+        }
+
+        .success-icon svg {
+            width: 40px;
+            height: 40px;
+            stroke: white;
+            stroke-width: 3;
+            fill: none;
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 32px 24px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .otp-input {
+                width: 48px;
+                height: 56px;
+                font-size: 20px;
+            }
+
+            .otp-inputs {
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <div class="icon-wrapper">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </div>
+                <h1>Verify Your Account</h1>
+                <p class="subtitle">We've sent a verification code to</p>
+                <p class="email-display">{{ email }}</p>
+            </div>
+
+            <meta name="csrf-token" content="{{ csrf_token }}">
+
+            <form method="POST" id="otpForm">
+                {% csrf_token %}
+                <input type="hidden" name="otp" id="otpHidden">
+                <label class="otp-label">Enter 6-digit code</label>
+                <div class="otp-inputs">
+                    <input type="text" class="otp-input" maxlength="1" pattern="\d" inputmode="numeric" data-index="0">
+                    <input type="text" class="otp-input" maxlength="1" pattern="\d" inputmode="numeric" data-index="1">
+                    <input type="text" class="otp-input" maxlength="1" pattern="\d" inputmode="numeric" data-index="2">
+                    <input type="text" class="otp-input" maxlength="1" pattern="\d" inputmode="numeric" data-index="3">
+                    <input type="text" class="otp-input" maxlength="1" pattern="\d" inputmode="numeric" data-index="4">
+                    <input type="text" class="otp-input" maxlength="1" pattern="\d" inputmode="numeric" data-index="5">
+                </div>
+                <div class="error-message" id="errorMessage"></div>
+                <button type="submit" class="verify-btn" id="verifyBtn">
+                    <span>Verify Account</span>
+                </button>
+
+            </form>
+
+            <div class="divider">
+                <span>or</span>
+            </div>
+
+            <div class="resend-section">
+                <p class="resend-text">Didn't receive the code?</p>
+                <button type="button" class="resend-btn" id="resendBtn">
+                    Resend Code <span class="timer" id="timer"></span>
+                </button>
+
+            </div>
+
+            <div class="back-link">
+                <a href="{% url 'signup' %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back to Sign Up
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-content">
+            <div class="success-icon">
+                <svg viewBox="0 0 24 24">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <h1>Verification Successful!</h1>
+            <p class="subtitle">Redirecting to your dashboard...</p>
+        </div>
+    </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const otpInputs = document.querySelectorAll(".otp-input");
+        const form = document.getElementById("otpForm");
+        const otpHidden = document.getElementById("otpHidden");
+        const verifyBtn = document.getElementById("verifyBtn");
+        const resendBtn = document.getElementById("resendBtn");
+        const errorBox = document.getElementById("errorMessage");
+        const timerSpan = document.querySelector(".timer");
+
+        let resendSeconds = 60;
+        let timerInterval = null;
+
+        /* ===============================
+        AUTO FOCUS FIRST INPUT
+        =============================== */
+        otpInputs[0].focus();
+
+        /* ===============================
+        OTP INPUT BEHAVIOUR
+        =============================== */
+        otpInputs.forEach((input, index) => {
+
+            input.addEventListener("input", () => {
+                input.value = input.value.replace(/\D/g, "");
+
+                if (input.value && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+
+                hideError();
+            });
+
+            input.addEventListener("keydown", e => {
+                if (e.key === "Backspace" && !input.value && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+        });
+
+        /* ===============================
+        FORM SUBMIT (VERIFY OTP)
+        =============================== */
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const otp = Array.from(otpInputs).map(i => i.value).join("");
+            otpHidden.value = otp;   
+
+
+            if (otp.length !== 6) {
+                showError("Please enter all 6 digits");
+                return;
+            }
+
+            verifyBtn.classList.add("loading");
+            verifyBtn.disabled = true;
+
+            const response = await fetch("", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": document.querySelector(
+                        'meta[name="csrf-token"]'
+                    ).content
+                },
+                body: new FormData(form)
+            });
+
+            const data = await response.json();
+
+
+            verifyBtn.classList.remove("loading");
+            verifyBtn.disabled = false;
+
+            if (data.status === "error") {
+                showError(data.message);
+            } else {
+                document.getElementById("successOverlay").classList.add("show");
+                setTimeout(() => window.location.href = "/home/", 2000);
+            }
+        });
+
+
+        /* ===============================
+        RESEND OTP (AJAX)
+        =============================== */
+            resendBtn.addEventListener("click", async () => {
+
+            if (resendBtn.disabled) return;
+
+            try {
+                const response = await fetch("/resend-otp/", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": document.querySelector(
+                            'meta[name="csrf-token"]'
+                        ).content
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showError(data.error || "OTP resend failed");
+                    return;
+                }
+
+                hideError();
+                startTimer();
+
+            } catch (err) {
+                showError("Network error. Please check connection.");
+            }
+        });
+
+
+
+
+        /* ===============================
+        RESEND TIMER
+        =============================== */
+        function startTimer() {
+            let endTime = Date.now() + 60000;
+            localStorage.setItem("otpTimer", endTime);
+
+            resendBtn.disabled = true;
+
+            timerInterval = setInterval(() => {
+                let remaining = Math.floor((endTime - Date.now()) / 1000);
+
+                if (remaining <= 0) {
+                    clearInterval(timerInterval);
+                    resendBtn.disabled = false;
+                    timerSpan.textContent = "";
+                    localStorage.removeItem("otpTimer");
+                } else {
+                    timerSpan.textContent = `(${remaining}s)`;
+                }
+            }, 1000);
+        }
+
+
+        // On page load
+        const savedTimer = localStorage.getItem("otpTimer");
+        if (savedTimer && Date.now() < savedTimer) {
+            startTimer();
+        }
+
+
+        /* ===============================
+        ERROR HANDLING
+        =============================== */
+        function showError(msg) {
+            errorBox.textContent = msg;
+            errorBox.classList.add("show");
+        }
+
+        function hideError() {
+            errorBox.classList.remove("show");
+        }
+
+    });
+</script>
+</body>
+</html>
