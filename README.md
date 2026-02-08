@@ -89,7 +89,7 @@ AI_GENERATORS/
 
 **Vivek Kumar**
 B.Tech Computer Science Student
-Full Stack Django Developer
+Developer
 
 ---
 
