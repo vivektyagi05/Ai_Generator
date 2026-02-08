@@ -67,18 +67,16 @@ def user_signup(request):
         from django.core.mail.utils import DNS_NAME
 
         try:
-            # send_mail(
-            #     subject='Your abc.com OTP',
-            #     message=f'Your OTP is {otp}',
-            #     from_email='ai.generatormails@gmail.com',
-            #     recipient_list=[email],
-            # )
-            pass
-        except:
-            pass
-        #     if 'getaddrinfo' in str(e):
-        #         messages.error(request, 'Email service temporarily unavailable. Please try again.')
-        #     raise  # Or handle silently
+            send_mail(
+                subject='Your abc.com OTP',
+                message=f'Your OTP is {otp}',
+                from_email='ai.generatormails@gmail.com',
+                recipient_list=[email],
+            )
+        except Exception as e:
+            if 'getaddrinfo' in str(e):
+                messages.error(request, 'Email service temporarily unavailable. Please try again.')
+            raise  # Or handle silently
 
 
         request.session["signup_data"] = {
@@ -214,19 +212,15 @@ def verify_otp(request):
 
         return JsonResponse({"status": "success"})
 
+# ================= RESEND OTP =================
 @require_POST
 def resend_otp(request):
 
     signup_data = request.session.get("signup_data")
-
     if not signup_data:
-        return JsonResponse(
-            {"error": "Session expired. Please sign up again."},
-            status=400
-        )
+        return JsonResponse({"error": "Session expired"}, status=400)
 
     email = signup_data["email"]
-
     otp = str(random.randint(100000, 999999))
 
     EmailOTP.objects.update_or_create(
@@ -235,15 +229,19 @@ def resend_otp(request):
         defaults={"otp": otp}
     )
 
-    send_mail(
-        "Your abc.com OTP",
-        f"Your OTP is {otp}",
-        settings.DEFAULT_FROM_EMAIL,
-        [email],
-    )
+    # 🔥 FAIL SAFE EMAIL
+    try:
+        send_mail(
+            "Your OTP - AI Generator",
+            f"Your OTP is {otp}",
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=True
+        )
+    except Exception:
+        pass
 
     return JsonResponse({"status": "success"})
-
 
 
 # ========================== =============#

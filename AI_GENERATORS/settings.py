@@ -1,6 +1,3 @@
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -13,12 +10,11 @@ load_dotenv(BASE_DIR / ".env")
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_HOST = None
-EMAIL_PORT = None
-EMAIL_HOST_USER = None
-EMAIL_HOST_PASSWORD = None
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
@@ -26,6 +22,10 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = 'ai.generatormails@gmail.com' 
 
 SECRET_KEY = os.getenv("SECRET_KEY")
+
+if not SECRET_KEY:
+    raise Exception("SECRET_KEY missing in environment variables")
+
 
 DEBUG =  os.getenv("DEBUG") == "True"
 
