@@ -67,7 +67,7 @@ def user_signup(request):
 
         threading.Thread(
             target=send_email_async,
-            args=("Your abc.com OTP", f"Your OTP is {otp}", email)
+            args=("Your Ai_Generator.com OTP", f"Your OTP is {otp}", email)
         ).start()
 
 
@@ -224,7 +224,7 @@ def resend_otp(request):
 
     threading.Thread(
         target=send_email_async,
-        args=("Your abc.com Password Reset OTP", f"Your OTP is {otp}", email)
+        args=("Your Ai_Generator.com Password Reset OTP", f"Your OTP is {otp}", email)
     ).start()
 
 
