@@ -67,16 +67,18 @@ def user_signup(request):
         from django.core.mail.utils import DNS_NAME
 
         try:
-            send_mail(
-                subject='Your abc.com OTP',
-                message=f'Your OTP is {otp}',
-                from_email='ai.generatormails@gmail.com',
-                recipient_list=[email],
-            )
-        except Exception as e:
-            if 'getaddrinfo' in str(e):
-                messages.error(request, 'Email service temporarily unavailable. Please try again.')
-            raise  # Or handle silently
+            # send_mail(
+            #     subject='Your abc.com OTP',
+            #     message=f'Your OTP is {otp}',
+            #     from_email='ai.generatormails@gmail.com',
+            #     recipient_list=[email],
+            # )
+            pass
+        except:
+            pass
+        #     if 'getaddrinfo' in str(e):
+        #         messages.error(request, 'Email service temporarily unavailable. Please try again.')
+        #     raise  # Or handle silently
 
 
         request.session["signup_data"] = {
@@ -233,12 +235,12 @@ def resend_otp(request):
         defaults={"otp": otp}
     )
 
-    # send_mail(
-    #     "Your abc.com OTP",
-    #     f"Your OTP is {otp}",
-    #     settings.DEFAULT_FROM_EMAIL,
-    #     [email],
-    # )
+    send_mail(
+        "Your abc.com OTP",
+        f"Your OTP is {otp}",
+        settings.DEFAULT_FROM_EMAIL,
+        [email],
+    )
 
     return JsonResponse({"status": "success"})
 

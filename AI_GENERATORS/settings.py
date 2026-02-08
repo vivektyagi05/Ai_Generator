@@ -1,3 +1,6 @@
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -10,7 +13,7 @@ load_dotenv(BASE_DIR / ".env")
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = None
 EMAIL_PORT = None
 EMAIL_HOST_USER = None
