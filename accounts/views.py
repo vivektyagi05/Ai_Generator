@@ -33,6 +33,7 @@ def user_login(request):
 
     return render(request, "login.html")
 
+print("EMAIL_BACKEND:", settings.EMAIL_BACKEND)
 
 # ================= SIGNUP (SEND OTP) =================
 def user_signup(request):
