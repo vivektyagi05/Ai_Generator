@@ -232,12 +232,12 @@ def resend_otp(request):
         defaults={"otp": otp}
     )
 
-    send_mail(
-        "Your abc.com OTP",
-        f"Your OTP is {otp}",
-        settings.DEFAULT_FROM_EMAIL,
-        [email],
-    )
+    # send_mail(
+    #     "Your abc.com OTP",
+    #     f"Your OTP is {otp}",
+    #     settings.DEFAULT_FROM_EMAIL,
+    #     [email],
+    # )
 
     return JsonResponse({"status": "success"})
 
