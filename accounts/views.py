@@ -65,11 +65,7 @@ def user_signup(request):
         )
 
 
-        threading.Thread(
-            target=send_email_async,
-            args=("Your Ai_Generator.com OTP", f"Your OTP is {otp}", email)
-        ).start()
-
+        send_email_async("Your Ai_Generator.com OTP", f"Your OTP is {otp}", email)
 
 
         request.session["signup_data"] = {
