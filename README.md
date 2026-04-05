@@ -96,3 +96,39 @@ Developer
 ## ⭐ Support
 
 If you like this project, give it a ⭐ on GitHub and connect with me on LinkedIn.
+
+
+
+### 🔐 OTP & Email Verification (Important Notice)
+
+The OTP-based email verification system in this project is currently **partially disabled for public users**.
+
+#### ❗ Reason
+
+This project uses an external email service (**Resend API**) for sending OTP emails.
+In the free/testing mode, the service only allows sending emails to the developer’s own verified email address.
+
+#### ⚠️ Current Limitation
+
+* New users **cannot receive OTP emails** on signup
+* Email-based features like:
+
+  * Signup verification
+  * Password reset
+  * OTP resend
+    are **not fully functional for public users**
+
+#### ✅ What Works
+
+* UI / Frontend flow
+* OTP generation logic
+* Backend integration
+* All other features of the project are working correctly
+
+#### 🚀 Future Plan
+
+The OTP system will be fully enabled after upgrading to a paid plan and verifying a custom domain.
+
+---
+
+💡 *This limitation is only due to email service restrictions — not a bug in the code.*
