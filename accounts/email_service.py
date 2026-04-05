@@ -1,19 +1,29 @@
 from django.core.mail import send_mail
 from django.conf import settings
 
-def send_email_async(subject, message, to_email):
+import requests
+from django.conf import settings
 
-    from django.core.mail import send_mail
+def send_email_async(subject, message, to_email):
+    print("🔥 EMAIL FUNCTION STARTED")
 
     try:
-        send_mail(
-            subject,
-            message,
-            settings.EMAIL_HOST_USER,
-            [to_email],
-            fail_silently=False,
+        res = requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "from": "onboarding@resend.dev",
+                "to": [to_email],
+                "subject": subject,
+                "html": f"<p>{message}</p>"
+            },
+            timeout=10
         )
-        print("✅ EMAIL SENT SUCCESS")
+
+        print("✅ EMAIL SENT:", res.text)
 
     except Exception as e:
-        print("❌ EMAIL ERROR:", str(e))
+        print("❌ EMAIL ERROR:", e)
