@@ -60,7 +60,6 @@ A production-ready AI-powered web application built using **Django**, designed t
 * GROQ API (LLaMA 3.1 Model)
 
 
-
 ## 📂 Project Structure
 
 ```
@@ -82,7 +81,7 @@ AI_GENERATORS/
 * Payment-based premium AI access
 * Real-time streaming responses
 * Advanced analytics dashboard
-
+* Credit/entitlement system
 ---
 
 ## 👨‍💻 Author
