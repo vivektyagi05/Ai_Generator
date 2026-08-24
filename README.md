@@ -52,7 +52,6 @@ A production-ready AI-powered web application built using **Django**, designed t
 **Backend**
 
 * Python
-* Django 3.2
 * Django Authentication System
 
 **AI**
