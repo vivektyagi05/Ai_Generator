@@ -128,3 +128,33 @@ class ForgotPasswordTests(TestCase):
         session = self.client.session
         self.assertNotIn("otp_verified", session)
         self.assertNotIn("reset_email", session)
+
+    # PHASE 8A SECURITY HARDENING -- closes a verify-step enumeration
+    # side channel: forgot_send_otp() already returns an identical
+    # generic response for a registered vs. unregistered email (see
+    # test_enumeration_resistant_response_bodies_match above), but no
+    # EmailOTP row was ever created for an unregistered email, so
+    # otp_service.verify_otp()'s EmailOTP.DoesNotExist branch used to
+    # return a message ("Verification code not found or already used...")
+    # distinguishable from the wrong-code-on-a-real-OTP branch ("Invalid
+    # verification code."). An attacker could send-otp for a candidate
+    # email, immediately verify-otp with any guess, and use which
+    # message came back to learn whether the account exists -- without
+    # ever needing the real code. The two branches now return an
+    # identical message and status.
+    def test_verify_step_gives_identical_response_for_unregistered_email_and_wrong_code(self):
+        # Unregistered email: send-otp (no OTP ever created), then guess.
+        unreg_client = Client()
+        with patch("accounts.views.send_reset_otp"):
+            unreg_client.post("/forgot/send-otp/", {"email": "ghost@example.com"})
+        self.assertFalse(EmailOTP.objects.filter(email="ghost@example.com").exists())
+        unreg_response = unreg_client.post("/forgot/verify-otp/", {"otp": "000000"})
+
+        # Registered email with a real, pending OTP: guess wrong.
+        with patch("accounts.views.send_reset_otp"):
+            self.client.post("/forgot/send-otp/", {"email": "known@example.com"})
+        self.assertTrue(EmailOTP.objects.filter(email="known@example.com").exists())
+        reg_wrong_response = self.client.post("/forgot/verify-otp/", {"otp": "000000"})
+
+        self.assertEqual(unreg_response.status_code, reg_wrong_response.status_code)
+        self.assertEqual(unreg_response.json(), reg_wrong_response.json())

@@ -1,0 +1,333 @@
+/* static/css/components.css
+   PHASE 2 STEP 1 — FOUNDATION — Shared component library.
+
+   Requires static/css/tokens.css loaded first. New/unused surface today
+   (see PHASE_2_DESIGN_SYSTEM.md) -- adopted page-by-page starting Phase 3.
+   Every selector here is namespaced under a "ds-" (design system) prefix
+   so it can be introduced into an existing page without colliding with
+   that page's current class names (e.g. main.html already has its own
+   unrelated .card / .btn-primary rules).
+*/
+
+/* ============================== Buttons ============================== */
+
+.ds-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-family-base);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  text-decoration: none;
+  line-height: 1.2;
+}
+
+.ds-btn-primary {
+  background: var(--primary-color);
+  color: #fff;
+}
+.ds-btn-primary:hover { background: var(--primary-hover); }
+
+.ds-btn-secondary {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+.ds-btn-secondary:hover { background: var(--bg-hover); }
+
+.ds-btn-danger {
+  background: var(--danger-color);
+  color: #fff;
+}
+.ds-btn-danger:hover { background: var(--danger-hover); }
+
+.ds-btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.ds-btn-ghost:hover { background: var(--bg-hover); }
+
+.ds-btn:disabled,
+.ds-btn[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.ds-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ============================== Inputs ================================ */
+
+.ds-field { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
+
+.ds-label { font-size: var(--text-sm); font-weight: 600; color: var(--text-primary); }
+
+.ds-input,
+.ds-textarea,
+.ds-select {
+  font-family: var(--font-family-base);
+  font-size: var(--text-md);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ds-textarea { min-height: 120px; resize: vertical; }
+
+.ds-input:focus,
+.ds-textarea:focus,
+.ds-select:focus {
+  outline: none;
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px rgba(255, 122, 61, 0.15);
+}
+
+.ds-input:disabled,
+.ds-textarea:disabled,
+.ds-select:disabled {
+  background: var(--bg-disabled);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+
+.ds-field-error .ds-input,
+.ds-field-error .ds-textarea { border-color: var(--danger-color); }
+.ds-field-hint { font-size: var(--text-xs); color: var(--text-secondary); }
+.ds-field-error-text { font-size: var(--text-xs); color: var(--danger-color); }
+
+/* ============================== Cards ================================= */
+
+.ds-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-6);
+}
+
+/* Interactive variant -- hover elevation for clickable/actionable cards
+   (dashboard shortcuts, history rows, generator cards). Opt-in via class
+   so static/informational cards don't get a pointer affordance they
+   don't have. */
+.ds-card-interactive {
+  transition: box-shadow 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+}
+.ds-card-interactive:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--ember-border-strong);
+  transform: translateY(-1px);
+}
+
+/* ============================== Badges ================================= */
+
+.ds-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  line-height: 1.4;
+}
+
+.ds-badge-neutral { background: var(--bg-hover); color: var(--text-secondary); }
+.ds-badge-success { background: var(--success-bg); color: var(--success-color); }
+.ds-badge-warning { background: var(--warning-bg); color: var(--warning-color); }
+.ds-badge-danger { background: var(--danger-bg); color: var(--danger-color); }
+.ds-badge-info { background: var(--info-bg); color: var(--info-color); }
+.ds-badge-premium { background: #fff7ed; color: #c2410c; }
+
+/* ============================== Alerts ================================= */
+
+.ds-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  border: 1px solid transparent;
+}
+
+.ds-alert-info { background: var(--info-bg); color: #1e3a8a; border-color: #bfdbfe; }
+.ds-alert-success { background: var(--success-bg); color: #065f46; border-color: #a7f3d0; }
+.ds-alert-warning { background: var(--warning-bg); color: #92400e; border-color: #fde68a; }
+.ds-alert-danger { background: var(--danger-bg); color: #991b1b; border-color: #fecaca; }
+
+/* ============================== Toasts ================================= */
+/* Container is injected once by static/js/toast.js; markup contract only
+   lives here. See PHASE_2_FRONTEND_ARCHITECTURE.md "Shared JS". */
+
+.ds-toast-region {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 360px;
+}
+
+.ds-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--text-secondary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  animation: ds-toast-in 0.18s ease-out;
+}
+
+.ds-toast-success { border-left-color: var(--success-color); }
+.ds-toast-warning { border-left-color: var(--warning-color); }
+.ds-toast-danger { border-left-color: var(--danger-color); }
+.ds-toast-info { border-left-color: var(--info-color); }
+
+.ds-toast-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: var(--text-md);
+  line-height: 1;
+}
+
+@keyframes ds-toast-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================== Modals ================================= */
+
+.ds-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.ds-modal {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: 480px;
+  width: 100%;
+  padding: var(--space-6);
+}
+
+.ds-modal-title { font-size: var(--text-lg); font-weight: 700; margin: 0 0 var(--space-2); }
+.ds-modal-body { color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-6); }
+.ds-modal-actions { display: flex; justify-content: flex-end; gap: var(--space-3); }
+
+/* ======================= Loading / skeleton states ====================== */
+
+.ds-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  animation: ds-spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes ds-spin { to { transform: rotate(360deg); } }
+
+.ds-skeleton {
+  background: linear-gradient(90deg, var(--bg-hover) 25%, #ebebee 37%, var(--bg-hover) 63%);
+  background-size: 400% 100%;
+  animation: ds-skeleton-shimmer 1.4s ease infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes ds-skeleton-shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+/* ==================== Empty / error / success states ==================== */
+
+.ds-state {
+  text-align: center;
+  padding: var(--space-10) var(--space-4);
+  color: var(--text-secondary);
+}
+
+.ds-state-icon { font-size: 32px; margin-bottom: var(--space-3); }
+.ds-state-title { font-size: var(--text-lg); font-weight: 700; color: var(--text-primary); margin: 0 0 var(--space-2); }
+.ds-state-desc { font-size: var(--text-sm); margin: 0 0 var(--space-4); }
+
+/* ============================== Focus states ============================ */
+
+.ds-focusable:focus-visible,
+a.ds-link:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ========================= Credit indicator (Step 10) =================== */
+/* Used by static/js/credits.js. Shown in the app-shell nav so credit state
+   is visible from every authenticated page, not only /profile/ -- see
+   PHASE_2_FRONTEND_GAP_MATRIX.md GAP-04. */
+
+.ds-credit-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.ds-credit-pill[data-state="low"] { background: var(--warning-bg); color: var(--warning-color); border-color: #fde68a; }
+.ds-credit-pill[data-state="empty"] { background: var(--danger-bg); color: var(--danger-color); border-color: #fecaca; }
+.ds-credit-pill[data-state="unlimited"] { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+
+/* PHASE 7 accessibility pass: a shared .sr-only utility (visually
+   hidden, still announced by screen readers) previously existed only
+   as a page-local copy inside templates/main.html's own <style> block
+   -- every other page that needed the same pattern (e.g.
+   history.html's search input, which had a placeholder but no real
+   label) had no shared definition to use. Centralized here since every
+   page already loads this file via base_app.html/base_public.html. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

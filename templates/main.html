@@ -1,583 +1,551 @@
-<!DOCTYPE html>
-<html lang="hi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Content Generator - Photos, Stories, Applications & Proposals</title>
+{% extends "base_app.html" %}
+{% load static %}
+{% comment %} PHASE 6 STEP 6.8A: main.html now extends the shared app shell
+   (base_app.html -> nav_app.html) instead of being a standalone HTML
+   document with its own duplicate header/nav -- the first page to
+   actually adopt the Phase 2 foundation (base_app.html/nav_app.html were
+   built but CODE-VERIFIED unused by any page before this change; see
+   PHASE_6_WORKSPACE_UI_AUDIT.md).
+
+   PHASE 7 GOLDEN UI: the page's own separate dark-glassmorphism theme
+   (stock-photo background, neon gradients, backdrop-filter blur,
+   hardcoded hex colors) has been retired. The <style> block in
+   extra_head below now re-themes every one of its original selectors
+   onto the shared tokens.css/components.css/shell.css design system --
+   same class names, same JS hooks, only the property values changed --
+   so the generator workspace is visually one product with login,
+   signup, profile, plans and history instead of a second, disconnected
+   one. See PHASE_7_GOLDEN_UI_AUDIT.md for the before/after inventory.
+{% endcomment %}
+{% block title %}AI Content Generator - Photos, Stories, Applications & Proposals{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/billing.css' %}">
     <style>
+        /* ============================================================
+           PHASE 7 GOLDEN UI — GENERATOR WORKSPACE VISUAL RECONSTRUCTION
+
+           This block previously defined a completely separate dark
+           glassmorphism theme (stock-photo background, neon gradients,
+           heavy backdrop-filter blur, hardcoded hex colors, several
+           !important overrides) with NO relationship to
+           static/css/tokens.css / components.css / shell.css -- the
+           real design system every other page (login, signup, forget,
+           profile, plans, history) already shares. That mismatch is
+           why the workspace looked like a different, unfinished
+           product bolted onto the rest of the app: two visual
+           languages, two contrast systems, two spacing scales.
+
+           This rewrite keeps every selector and class name the HTML/JS
+           already depend on (verified against actual usage in this
+           file, not assumed) so no markup or generator-lifecycle JS
+           changes were required -- only property VALUES change, now
+           sourced from the shared tokens. Selectors that matched no
+           real element anywhere in this file or its JS (.upload-area,
+           .dragover, .preview-container, .preview-box, .modal-content,
+           .input-group, .close, .body-grid) were confirmed dead via
+           grep against the actual rendered markup and JS strings, and
+           are removed rather than re-themed.
+           ============================================================ */
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: 
-                linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.6) 100%),
-                url('https://t4.ftcdn.net/jpg/05/52/90/87/240_F_552908744_M2Q4GkAVjqnEEQsyTvTafTiq171JC4Oz.jpg') center center;
-            background-size: cover;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-            min-height: 100vh;
-            color: #333;
-            position: relative;
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(255, 107, 157, 0.2) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(55, 66, 250, 0.2) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(248, 181, 0, 0.1) 0%, transparent 50%);
-            backdrop-filter: blur(2px);
-            z-index: -1;
-            animation: floatingParticles 20s ease infinite;
-        }
-
-        @keyframes floatingParticles {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            25% { transform: translateY(-10px) rotate(1deg); }
-            50% { transform: translateY(-5px) rotate(-1deg); }
-            75% { transform: translateY(-15px) rotate(0.5deg); }
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        body.ds-shell-body {
+            font-family: var(--font-family-base);
         }
 
         .container {
-            max-width: 1400px;
+            max-width: var(--app-max-width);
             margin: 0 auto;
-            padding: 20px;
         }
 
-        .header {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 25px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s ease;
-        }
-
-        .header:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            background: linear-gradient(45deg, #ff6b9d, #3742fa, #f8b500);
-            background-size: 200% 200%;
-            animation: gradientShift 3s ease infinite;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .auth-buttons {
-            display: flex;
-            gap: 10px;
-        }
+        /* ---------------------------- Buttons ---------------------------- */
 
         .btn {
             padding: 10px 20px;
-            border: none;
-            border-radius: 25px;
+            border: 1px solid transparent;
+            border-radius: var(--radius-md);
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s ease;
+            font-size: var(--text-sm);
+            transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
             text-decoration: none;
             display: inline-block;
         }
 
         .btn-primary {
-            background: linear-gradient(45deg, #ff6b9d, #3742fa);
-            color: white;
-            border: none;
-            position: relative;
-            overflow: hidden;
+            background: var(--primary-color);
+            color: #fff;
         }
-
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: all 0.5s;
-        }
-
-        .btn-primary:hover::before {
-            left: 100%;
-        }
+        .btn-primary:hover { background: var(--primary-hover); }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(10px);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+        .btn-secondary:hover { background: var(--bg-hover); }
+
+        .btn:focus-visible {
+            outline: 2px solid var(--border-focus);
+            outline-offset: 2px;
         }
 
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.5);
+        /* Quick Actions column: full-width stacked buttons */
+        .sidebar .btn {
+            margin-bottom: var(--space-3);
+            width: 100%;
         }
+        .sidebar .btn:last-child { margin-bottom: 0; }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
+        /* ------------------------- Generator tabs ------------------------- */
 
         .nav-tabs {
             display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px;
-            border-radius: 20px;
-            backdrop-filter: blur(20px);
+            gap: var(--space-2);
+            margin-bottom: var(--space-8);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: var(--space-2);
+            border-radius: var(--radius-lg);
+            flex-wrap: wrap;
         }
 
         .nav-tab {
-            padding: 12px 24px;
+            padding: 10px 20px;
             background: transparent;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--text-secondary);
             border: none;
-            border-radius: 15px;
+            border-radius: var(--radius-md);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background 0.15s ease, color 0.15s ease;
             font-weight: 600;
+            font-size: var(--text-sm);
+        }
+
+        .nav-tab:hover {
+            color: var(--text-primary);
+            background: var(--bg-hover);
         }
 
         .nav-tab.active {
-            background: linear-gradient(135deg, #00f2ff, #5f4eff);
-            color: #000;
-            font-weight: 700;
-            box-shadow: 0 6px 20px rgba(0, 242, 255, 0.6);
-            transform: translateY(-3px);
+            background: var(--primary-color);
+            color: #fff;
         }
 
-
-        .nav-tab:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.1);
+        .nav-tab:focus-visible {
+            outline: 2px solid var(--border-focus);
+            outline-offset: 2px;
         }
 
-        .tab-content {
-            display: none;
-        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
-        .tab-content.active {
-            display: block;
+        /* --------------------------- Workspace shell --------------------------- */
+
+        :root {
+            --panel-padding-primary: var(--space-8);
+            --panel-padding-secondary: var(--space-5);
         }
 
         .main-content {
             display: grid;
             grid-template-columns: 1fr 300px;
-            gap: 30px;
+            gap: var(--space-6);
+            align-items: start;
         }
 
         .editor-section {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(40px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 25px;
-            padding: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .editor-section:hover {
-            background: rgba(255, 255, 255, 0.12);
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--panel-padding-primary);
+            box-shadow: var(--shadow-sm);
         }
 
         .sidebar {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(40px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 25px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--panel-padding-secondary);
             height: fit-content;
-            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 90px;
         }
 
-        .sidebar:hover {
-            background: rgba(255, 255, 255, 0.12);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-        }
-
-        .upload-area {
-            border: 3px dashed rgba(255, 255, 255, 0.4);
-            border-radius: 20px;
-            padding: 40px;
+        .tab-title {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--text-primary);
             text-align: center;
-            margin-bottom: 30px;
-            background: linear-gradient(45deg, rgba(255, 107, 157, 0.1), rgba(55, 66, 250, 0.1));
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            margin-bottom: var(--space-2);
         }
 
-        .upload-area::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: all 0.8s;
-        }
-
-        .upload-area:hover::before {
-            left: 100%;
-        }
-
-        .upload-area:hover {
-            border-color: rgba(255, 255, 255, 0.6);
-            background: linear-gradient(45deg, rgba(255, 107, 157, 0.15), rgba(55, 66, 250, 0.15));
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-        }
-
-        .upload-area.dragover {
-            background: linear-gradient(45deg, rgba(255, 107, 157, 0.2), rgba(55, 66, 250, 0.2));
-            border-color: rgba(255, 255, 255, 0.8);
-            transform: scale(1.05);
-        }
-
-        .preview-container {
-            display: flex;
-            gap: 20px;
-            margin: 30px 0;
-        }
-
-        .preview-box {
-            flex: 1;
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            padding: 20px;
+        .generator-subtitle {
+            color: var(--text-secondary);
             text-align: center;
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            transition: all 0.3s ease;
+            font-size: var(--text-sm);
+            margin-bottom: var(--space-6);
         }
 
-        .preview-box:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        }
+        /* ----------------------------- Form fields ----------------------------- */
 
-        .preview-image {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .input-area {
-            margin-bottom: 20px;
-        }
+        .input-area { margin-bottom: var(--space-5); }
 
         .input-area label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: var(--space-2);
             font-weight: 600;
-            color: white;
+            font-size: var(--text-sm);
+            color: var(--text-primary);
         }
 
-        /* All input, textarea, select — Improve clarity + Blur + Glow */
         .input-area input,
         .input-area textarea,
         .input-area select,
         #codecreator-tab textarea,
         #codecreator-tab select {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.25);
-            background: rgba(255,255,255,0.15);  /* more visible */
-            backdrop-filter: blur(8px);
-            color: #fff;
-            font-size: 15px;
-            transition: 0.3s ease;
+            padding: 10px 14px;
+            margin-bottom: var(--space-4);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-size: var(--text-md);
+            font-family: var(--font-family-base);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
-        /* Language dropdown ONLY */
+
+        .input-area textarea,
+        #codecreator-tab textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
         #codecreator-tab #codeLang {
             width: 220px;
             height: 42px;
             padding: 8px 12px;
-            font-size: 14px;
+            font-size: var(--text-sm);
             min-height: unset;
         }
 
-        /* Code prompt textarea ONLY */
         #codecreator-tab #codePrompt {
             min-height: 140px;
-            resize: vertical;
         }
 
-        /* textarea ka size alag rahe */
-        .input-area textarea,
-        #codecreator-tab textarea {
-            min-height: 120px;
+        .input-area input::placeholder,
+        .input-area textarea::placeholder {
+            color: var(--text-tertiary);
         }
 
-
-        /* On focus - Glow */
         .input-area input:focus,
         .input-area textarea:focus,
         .input-area select:focus,
         #codecreator-tab textarea:focus,
         #codecreator-tab select:focus {
-            border-color: #7bf2ff;
-            background: rgba(255,255,255,0.22);
-            box-shadow: 0 0 15px rgba(123, 242, 255, 0.4);
+            border-color: var(--input-focus);
+            box-shadow: 0 0 0 3px rgba(255, 122, 61, 0.15);
             outline: none;
         }
 
-
-        .output-area {
-            background: rgba(0, 0, 0, 0.45);
-            border: 1.6px solid rgba(255, 255, 255, 0.18);
-            border-radius: 18px;
-            padding: 25px;
-            backdrop-filter: blur(18px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.45);
-            color: #f8f9ff; /* Clean soft white */
-            font-size: 16px;
-            line-height: 1.8;
-            max-height: 550px;
-            overflow-y: auto;
-            transition: 0.3s ease;
+        select,
+        .input-area select,
+        #codecreator-tab select {
+            color: var(--text-primary);
+            background: var(--input-bg);
         }
 
-        .output-area::-webkit-scrollbar {
-            width: 8px;
+        select option {
+            background: var(--bg-card);
+            color: var(--text-primary);
         }
 
-        .output-area::-webkit-scrollbar-thumb {
-            background: linear-gradient(45deg, #ff6b9d, #3742fa);
-            border-radius: 10px;
+        .required-marker {
+            color: var(--danger-color);
+            margin-left: 3px;
         }
 
-        .output-area:hover {
-            border-color: rgba(255, 139, 230, 0.6);
-            box-shadow: 0 15px 50px rgba(255, 139, 230, 0.25);
-            transform: scale(1.01);
+        .optional-hint {
+            color: var(--text-tertiary);
+            font-weight: 400;
+            font-size: 0.85em;
         }
 
-        .body-options {
-            margin-bottom: 20px;
-        }
-
-        .body-options h3 {
-            margin-bottom: 15px;
-            color: white;
-        }
-
-        .body-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        .body-option {
-            padding: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .body-option::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: all 0.5s;
-        }
-
-        .body-option:hover::before {
-            left: 100%;
-        }
-
-        .body-option:hover {
-            border-color: rgba(255, 255, 255, 0.5);
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .body-option.selected {
-            border-color: rgba(255, 107, 157, 0.8);
-            background: linear-gradient(45deg, rgba(255, 107, 157, 0.3), rgba(55, 66, 250, 0.3));
-            color: white;
-            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.3);
-        }
+        /* ------------------------------ Generate CTA ------------------------------ */
 
         .generate-btn {
             width: 100%;
-            padding: 18px;
-            background: linear-gradient(45deg, #ff6b9d, #3742fa, #f8b500);
-            background-size: 200% 200%;
-            animation: gradientShift 3s ease infinite;
-            color: white;
+            padding: 14px;
+            background: var(--primary-color);
+            color: #fff;
             border: none;
-            border-radius: 20px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: var(--radius-md);
+            font-size: var(--text-md);
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-            margin-bottom: 25px;
+            transition: background 0.15s ease;
+            margin-top: var(--space-4);
+            margin-bottom: var(--space-6);
         }
 
-        .generate-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: all 0.5s;
-        }
-
-        .generate-btn:hover::before {
-            left: 100%;
-        }
-
-        .generate-btn:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-        }
+        .generate-btn:hover:not(:disabled) { background: var(--primary-hover); }
 
         .generate-btn:disabled {
-            opacity: 0.6;
+            opacity: 0.55;
             cursor: not-allowed;
-            transform: none;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
+        /* PHASE 7 Golden UI visual composition pass: this was plain
+           caption text (a duplicated inline style="..." attribute
+           repeated identically on all 5 generators, now removed from
+           the markup in favor of this one shared rule) with no visual
+           identity of its own -- just small gray text sitting under
+           the button, easy to miss and inconsistent with a "premium
+           product" information hierarchy. Given a real badge/chip
+           treatment instead: icon, background, border, so cost
+           information reads as a distinct, intentional piece of UI
+           rather than an afterthought caption. The "generating" state
+           (driven by the existing data-status attribute -- no JS
+           changed) gets its own visually distinct treatment so an
+           in-progress generation is unmistakable at a glance, not just
+           slightly bolder text.
+        */
+        .generator-cost-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: var(--space-3);
+            padding: 5px 12px;
+            border-radius: var(--radius-pill);
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            font-weight: 500;
         }
 
-        .modal-content {
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(40px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            margin: 10% auto;
-            padding: 30px;
-            border-radius: 25px;
-            width: 400px;
-            max-width: 90%;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            color: white;
+        .generator-cost-hint:empty { display: none; }
+
+        .generator-cost-hint::before {
+            content: "💳";
+            font-size: 0.9em;
+            line-height: 1;
         }
 
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
+        .generator-cost-hint[data-status="generating"] {
+            background: var(--info-bg);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .generator-cost-hint[data-status="generating"]::before {
+            /* The JS-set text itself already starts with its own "⏳"
+               (see setGeneratorStatusBadge()) -- suppress the base
+               chip's icon here instead of showing two. */
+            content: none;
+        }
+
+        /* -------------------------------- Result panel -------------------------------- */
+
+        /* PHASE 7 Golden UI visual composition pass, panel-level
+           refinement: previously the input area and the result area
+           sat in one continuous flat flow inside .editor-section with
+           no visual break between them -- the "Result" heading was
+           just another heading in the same vertical list as the form
+           labels above it, not a distinct zone. A top divider gives
+           the panel real internal hierarchy: input zone, then a clear
+           seam, then result zone -- without touching any HTML markup
+           (this is the one shared selector all 5 generators already
+           use for their result heading, so it applies uniformly). */
+        .result-heading {
+            margin: var(--space-6) 0 var(--space-3);
+            padding-top: var(--space-5);
+            border-top: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: var(--text-lg);
+            font-weight: 700;
+        }
+
+        .output-area {
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: var(--space-5);
+            color: var(--text-primary);
+            font-size: var(--text-md);
+            line-height: 1.7;
+            max-height: 550px;
+            overflow-y: auto;
+        }
+
+        .output-area::-webkit-scrollbar { width: 8px; }
+        .output-area::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: var(--radius-pill);
+        }
+
+        .output-area::before {
+            content: "AI Generated Output";
+            display: block;
+            padding-bottom: var(--space-3);
+            font-weight: 700;
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        #codecreator-tab .output-area::before { content: "AI Generated Code"; }
+
+        /* PHASE 7 Golden UI, generator consistency: the "waiting for a
+           result" placeholder paragraph existed in all 5 generators'
+           initial markup, but only Code's had any styling
+           (color/alignment) -- via an inline style, and only on first
+           load, not after Code's own reset button restored the same
+           text via JS. Story/Application/Proposal's placeholders had
+           NO styling at all (default text color, left-aligned), and
+           Photo's relied on a parent-level inline style. One shared
+           class now covers all 5, on both first load AND after reset
+           (the reset functions below were updated to add this class
+           too, not just the plain <p> they used before). */
+        .output-placeholder {
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        /* PHASE 7 Golden UI: the generated photo <img> (.preview-image)
+           had NO CSS rule at all -- it was only visually centered by
+           accident, via the parent .output-area's inline
+           style="text-align:center" (removed above in favor of the
+           shared .output-placeholder class, which does not itself
+           center a block-level image the way it centers inline text).
+           Also had no max-width, meaning a large generated image could
+           overflow the panel with no responsive handling -- a real gap
+           given this checkpoint's own responsive-verification pass.
+           Explicit rule instead of relying on implicit parent styling. */
+        .preview-image {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 0 auto;
+            border-radius: var(--radius-md);
+        }
+
+        .pretty-output h1,
+        .pretty-output h2,
+        .pretty-output h3 {
+            color: var(--text-primary);
+            margin-bottom: var(--space-2);
+        }
+        .pretty-output strong { color: var(--primary-color); }
+        .pretty-output em { color: var(--text-secondary); }
+        .pretty-output p { margin-bottom: var(--space-2); }
+
+        .pretty-output {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: var(--space-5);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-family: var(--font-family-mono);
+            font-size: var(--text-sm);
+            white-space: pre-wrap;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .code-explain {
+            margin-top: var(--space-4);
+            padding: var(--space-4);
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+        }
+
+        /* PHASE 7 Golden UI: previously an inline
+           style="display:flex; gap:10px; margin-bottom:12px;" repeated
+           at the one call site that builds this markup -- moved into
+           the stylesheet like every other component here, rather than
+           being the one remaining inline-styled structural element in
+           the whole re-themed workspace. */
+        .code-actions {
+            display: flex;
+            gap: var(--space-3);
+            margin-bottom: var(--space-3);
+        }
+
+        /* ------------------------------- Sidebar content ------------------------------- */
+
+        .body-options { margin-bottom: var(--space-5); }
+        .body-options h3,
+        .content-options h3 {
+            margin-bottom: var(--space-3);
+            font-size: var(--text-md);
+            color: var(--text-primary);
+        }
+
+        .content-options { margin-bottom: var(--space-5); }
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--space-2);
+        }
+
+        .content-option {
+            padding: var(--space-3);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
             cursor: pointer;
-        }
-
-        .close:hover {
-            color: white;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .input-group input {
+            text-align: center;
+            transition: border-color 0.15s ease, background 0.15s ease;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font: inherit;
             width: 100%;
-            padding: 12px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            font-size: 14px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            color: white;
-            transition: all 0.3s ease;
+            display: block;
         }
 
-        .input-area input::placeholder,
-        .input-area textarea::placeholder {
-            color: rgba(255,255,255,0.55);
-            font-weight: 400;
+        .content-option:hover {
+            border-color: var(--primary-color);
+            background: var(--bg-hover);
         }
 
-        .input-area input:focus,
-        .input-area textarea:focus,
-        .input-area select:focus {
-            border-color: #ff7edb;   /* Pink Neon */
-            background: rgba(255, 255, 255, 0.16);
-            box-shadow: 0 0 12px rgba(255, 126, 219, 0.6);
-            outline: none;
+        .content-option.selected {
+            border-color: var(--primary-color);
+            background: var(--success-bg);
+            color: var(--primary-color);
+            font-weight: 600;
         }
+
+        .content-option:focus-visible {
+            outline: 2px solid var(--border-focus);
+            outline-offset: 2px;
+        }
+
+        /* ---------------------------------- Loading ---------------------------------- */
 
         .loading {
             text-align: center;
-            padding: 20px;
+            padding: var(--space-5);
         }
 
         .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.2);
-            border-top: 4px solid #ff6b9d;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
+            width: 32px;
+            height: 32px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto var(--space-2);
         }
 
         @keyframes spin {
@@ -585,351 +553,144 @@
             100% { transform: rotate(360deg); }
         }
 
-        .content-options {
-            margin-bottom: 20px;
+        /* PHASE 7: .sr-only moved to static/css/components.css (this
+           page already loads it via base_app.html) so it's one shared
+           definition instead of a page-local copy other pages
+           (history.html) had no access to. */
+
+        /* -------------------------------- Responsive -------------------------------- */
+
+        @media (min-width: 768px) and (max-width: 1199px) {
+            .main-content {
+                grid-template-columns: 1fr 240px;
+                gap: var(--space-5);
+            }
         }
-
-        .content-options h3 {
-            margin-bottom: 15px;
-            color: white;
-        }
-
-        .content-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-        }
-
-        .content-option {
-            padding: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .content-option:hover {
-            border-color: rgba(255, 255, 255, 0.5);
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .content-option.selected {
-            border-color: rgba(255, 107, 157, 0.8);
-            background: linear-gradient(45deg, rgba(255, 107, 157, 0.3), rgba(55, 66, 250, 0.3));
-            color: white;
-            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.3);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .pretty-output h1, 
-        .pretty-output h2, 
-        .pretty-output h3 {
-            color: #ffd369;
-            margin-bottom: 10px;
-        }
-
-        .pretty-output strong {
-            color: #ff6b9d;
-        }
-
-        .pretty-output em {
-            color: #ffeaa7;
-        }
-
-        .pretty-output p {
-            margin-bottom: 10px;
-        }
-
-        .output-area::before {
-            content: "✨ AI Generated Output";
-            display: block;
-            padding-bottom: 12px;
-            font-weight: bold;
-            font-size: 18px;
-            color: #ffdd99;
-            text-align: center;
-        }
-
-        /* Code Creator Styles */
-        #codecreator-tab textarea,
-        #codecreator-tab select {
-            width: 100%;
-            resize: none; 
-            overflow: hidden;          /* 👈 scrollbar nahi */
-            min-height: 100px;
-            line-height: 1.6; 
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            border: 1px solid #444;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-        }
-
-        #codecreator-tab h2 {
-            color: #fff;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        #codecreator-tab .generate-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(45deg, #ff00cc, #3333ff);
-            border: none;
-            border-radius: 12px;
-            color: #fff;
-            cursor: pointer;
-            font-size: 18px;
-            margin-top: 10px;
-            transition: 0.3s;
-        }
-
-
-        #codecreator-tab .generate-btn:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 12px rgba(255,255,255,0.4);
-        }
-
-        .pretty-output {
-            background: rgba(20, 20, 20, 0.55);
-            border: 1px solid rgba(255,255,255,0.12);
-            padding: 20px;
-            border-radius: 14px;
-            backdrop-filter: blur(12px);
-            color: #e3edff;  /* soft blueish white */
-            font-family: "Fira Code", monospace;
-            font-size: 15px;
-            white-space: pre-wrap;
-            line-height: 1.6;
-            overflow-x: auto;
-        }
-
-        .code-explain {
-            margin-top: 14px;
-            padding: 16px;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            color: #ffffffcc; /* soft white */
-        }
-
-        .code-actions button {
-            padding: 8px 14px;
-            border-radius: 10px;
-            cursor: pointer;
-            border: none;
-            font-weight: 600;
-        }
-
-        .btn-primary {
-            background: linear-gradient(45deg, #ff6ba6, #5f4eff);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.15);
-            color: #fff;
-        }
-
-        /* Fix spacing between Quick Action buttons */
-        .sidebar .btn {
-            margin-bottom: 12px;
-            width: 100%;
-        }
-
-        .sidebar .btn:last-child {
-            margin-bottom: 0;
-        }
-
-        /* Welcome username soft glow */
-        .welcome-text {
-            font-size: 19px;
-            color: #cde7ff;
-            text-shadow: 0 0 12px rgba(0,255,255,0.5);
-            letter-spacing: 0.5px;
-        }
-
-        .tab-title {
-            font-size: 26px;
-            font-weight: 700;
-            color:#fdfdfd;
-            margin-bottom: 20px;
-            text-shadow:0 0 18px rgba(0,255,255,0.4);
-        }
-
-
-        /* FIX for dropdown showing white list */
-        select, .input-area select, #codecreator-tab select {
-            color: #fff !important;
-            background: rgba(0,0,0,0.35) !important;
-            backdrop-filter: blur(12px) !important;
-            z-index: 5;
-        }
-
-        /* When dropdown expands (OPTIONS LIST) */
-        select option {
-            background: #1e1e1e !important;
-            color: #fff !important;
-            padding: 12px;
-            border-bottom: 1px solid #444;
-            font-size: 15px;
-        }
-
-        /* Hover effect on options */
-        select option:hover {
-            background: #333 !important;
-            color: #00f2ff !important;
-        }
-
-        select::-ms-expand {
-            display: none;
-        }
-
-        select:focus {
-            outline: none;
-            border: 2px solid #00ffe7 !important;
-            box-shadow: 0 0 10px rgba(0,255,231,0.5);
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .logo-text {
-            background: linear-gradient(45deg, #ff6b9d, #3742fa, #f8b500);
-            background-size: 200% 200%;
-            animation: gradientShift 3s ease infinite;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            color: transparent; /* Fallback */
-        }
-
-        #codecreator-tab .input-area label {
-            color: white;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        #codecreator-tab .output-area::before {
-            content: "✨ AI Generated Code";
-            display: block;
-            padding-bottom: 12px;
-            font-weight: bold;
-            font-size: 18px;
-            color: #ffdd99;
-            text-align: center;
-        }
-
-
 
         @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .preview-container {
-                flex-direction: column;
-            }
+            .main-content { grid-template-columns: 1fr; }
+            .sidebar { position: static; }
+            .nav-tabs { flex-wrap: wrap; }
+        }
 
-            .nav-tabs {
-                flex-wrap: wrap;
+        @media (max-width: 420px) {
+            .btn { padding: 8px 14px; font-size: var(--text-sm); }
+            .nav-tab { padding: 8px 12px; font-size: 13px; }
+            .editor-section { padding: var(--space-5); }
+        }
+
+        /* PHASE 7 STEP 8/9 -- respected: no infinite animation remains that
+           this needs to stop beyond the spinner (which conveys real
+           in-progress state and is exempt by convention), but kept for
+           any future motion added to this panel. */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
             }
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div class="container">
 
-        <!-- ================= HEADER ================= -->
-        <div class="header">
-            <div class="logo">
-                <span class="logo-text">AI Content Generator</span>
-            </div>
+        {% comment %} PHASE 6 STEP 6.8A: the old standalone header (logo +
+             its own Login/Signup/Profile/History/Logout buttons and
+             credit pill) is gone -- nav_app.html (via base_app.html,
+             included above this content block) now provides all of
+             that, including a real credit pill, for every page that
+             adopts the shell. See the guest-mode fix this required in
+             nav_app.html itself, and the separate multi-line-comment
+             bug that fix also surfaced (PHASE_6_WORKSPACE_UI_AUDIT.md).
+        {% endcomment %}
 
-            <!-- AUTH BUTTONS (DYNAMIC) -->
-            <div class="auth-buttons">
-
-                {% if user.is_authenticated %}
-                    <div class="welcome-text">
-                        👋 Hi, {{ request.user.first_name|default:request.user.username }}
-                    </div>
-                    <a href="/profile/" class="btn btn-secondary">👤 Profile</a>
-                    <a href="/history/" class="btn btn-secondary">📜 History</a>
-                    <a href="/logout/" class="btn btn-primary">Logout</a>
-                {% else %}
-                    <a href="/login/" class="btn btn-secondary">Login</a>
-                    <a href="/signup/" class="btn btn-primary">Sign Up</a>
-                {% endif %}
-
-            </div>
-        </div>
+        <h1 class="sr-only">AI Content Generator Workspace</h1>
 
         <!-- =============== NAVIGATION TABS =============== -->
-        <div class="nav-tabs">
-            <button class="nav-tab active" onclick="switchTab('photo', this)">📷 Photo Editor</button>
-            <button class="nav-tab" onclick="switchTab('story', this)">📚 Story Generator</button>
-            <button class="nav-tab" onclick="switchTab('application', this)">📄 Application Writer</button>
-            <button class="nav-tab" onclick="switchTab('proposal', this)">💼 Proposal Maker</button>
-            <button class="nav-tab" onclick="switchTab('codecreator', this)">💻 Code Creator</button>
+        <div class="nav-tabs" role="navigation" aria-label="Choose generator">
+            <button class="nav-tab active" data-tab="photo" aria-current="true" onclick="switchTab('photo', this)">📷 Photo Editor</button>
+            <button class="nav-tab" data-tab="story" aria-current="false" onclick="switchTab('story', this)">📚 Story Generator</button>
+            <button class="nav-tab" data-tab="application" aria-current="false" onclick="switchTab('application', this)">📄 Application Writer</button>
+            <button class="nav-tab" data-tab="proposal" aria-current="false" onclick="switchTab('proposal', this)">💼 Proposal Maker</button>
+            <button class="nav-tab" data-tab="codecreator" aria-current="false" onclick="switchTab('codecreator', this)">💻 Code Creator</button>
         </div>
+
+        <!-- PHASE 6 STEP 6.5: proactive entitlement/access banner for
+             whichever generator is currently selected -- populated by
+             refreshEntitlementBanner() from the REAL /api/entitlements/
+             response, never a client-side guess. Empty/hidden by default;
+             only shown when the backend says the current generator is
+             genuinely not allowed. This is advisory UX only -- it saves
+             the user a wasted click, it does not and cannot substitute
+             for /api/ai/'s own server-side enforcement, which still runs
+             unconditionally on every request regardless of what this
+             banner shows. -->
+        <div id="entitlementBanner" aria-live="polite" style="display:none;"></div>
 
         <!-- ========== CODE CREATOR TAB ========== -->
         <div class="tab-content" id="codecreator-tab">
-            <h2 style="color:white; text-align:center; margin-bottom:20px;">💻 AI Code Creator</h2>
+            <div class="main-content">
 
-            <div class="input-area">
-                <label style="color:white;">Language:</label>
-                <select id="codeLang">
-                    <option value="javascript">JavaScript</option>
-                    <option value="python">Python</option>
-                    <option value="html">HTML/CSS</option>
-                    <option value="cpp">C++</option>
-                    <option value="java">Java</option>
-                    <option value="sql">SQL</option>
-                </select>
-            </div>
+                <div class="editor-section">
+                    <h2 class="tab-title">💻 AI Code Creator</h2>
+                    <p class="generator-subtitle">Describe what you need in plain English and get working, runnable code with a short explanation.</p>
 
-            <div class="input-area">
-                <label style="color:white;">Your Requirement:</label>
-                <textarea
-                    id="codePrompt"
-                    placeholder="Describe what code you want..."
-                    oninput="autoResize(this)"
-                ></textarea>
-            </div>
-            <div class="body-options" style="margin-top:15px;">
-                <h3>Quick Actions</h3>
+                    <div class="input-area">
+                        <label for="codeLang">Language:</label>
+                        <select id="codeLang">
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python</option>
+                            <option value="html">HTML/CSS</option>
+                            <option value="cpp">C++</option>
+                            <option value="java">Java</option>
+                            <option value="sql">SQL</option>
+                        </select>
+                    </div>
 
-                <button class="btn btn-primary" onclick="downloadGeneratedCode()">💾 Download</button>
-                <button class="btn btn-secondary" onclick="copyGeneratedCode()">📋 Copy</button>
-                <button class="btn btn-secondary" onclick="resetCodeGenerator()">🔄 Reset</button>
-            </div>
+                    <div class="input-area">
+                        <label for="codePrompt">Your Requirement:<span class="required-marker" aria-hidden="true">*</span><span class="sr-only"> required</span></label>
+                        <textarea
+                            id="codePrompt"
+                            placeholder="Describe what code you want..."
+                            oninput="autoResize(this)"
+                        ></textarea>
+                    </div>
 
+                    <button class="generate-btn" onclick="generateCode(event)">Generate Code</button>
+                    <p class="generator-cost-hint" id="codeCostHint" aria-live="polite"></p>
 
-                <button class="generate-btn" onclick="generateCode(event)">Generate Code</button>
+                    <h3 class="result-heading">Result</h3>
+                    <div id="codeOutput" class="output-area" aria-live="polite">
+                        <p class="output-placeholder">✨ AI code output will appear here...</p>
+                    </div>
+                </div>
 
-            <div id="codeOutput" class="output-area" style="margin-top:25px;">
-                <p style="color:#ffffff80; text-align:center;">✨ AI code output will appear here...</p>
+                <div class="sidebar">
+                    <div class="body-options">
+                        <h3>Quick Actions</h3>
+
+                        <!-- PHASE 5 STEP 3: the Copy/Download buttons that used to
+                             live here (inline handlers calling copyGeneratedCode
+                             and downloadGeneratedCode) were dead -- those
+                             functions are declared inside generateCode()'s own
+                             function body, not in global scope, so the inline
+                             handlers threw a silent ReferenceError on click. They
+                             were also fully redundant: generateCode() already
+                             renders its own working Copy/Download buttons next to
+                             the result once code exists (#copyCodeBtn /
+                             #downloadCodeBtn below the output). Removed rather
+                             than re-exposed as globals, per the fix instruction
+                             not to recreate the same global-namespace problem.
+                             Reset is genuinely unique (nothing else clears the
+                             form), so it's kept -- wired via a real id + a
+                             module-level addEventListener instead of an inline
+                             onclick reaching into another function's local scope. -->
+                        <button class="btn btn-secondary" id="resetCodeBtn" type="button">🔄 Reset</button>
+                    </div>
+                </div>
+
             </div>
         </div>
 
@@ -941,9 +702,10 @@
 
                 <div class="editor-section">
                     <h2 class="tab-title">AI Photo Generator</h2>
+                    <p class="generator-subtitle">Describe a scene and generate an original AI image from it.</p>
 
                     <div class="input-area">
-                        <label>Describe your image</label>
+                        <label for="imagePrompt">Describe your image<span class="required-marker" aria-hidden="true">*</span><span class="sr-only"> required</span></label>
                         <textarea
                             id="imagePrompt"
                             placeholder="e.g. A cyberpunk warrior, neon lights, rain, cinematic lighting"
@@ -953,9 +715,11 @@
                     <button class="generate-btn" id="generateBtn" onclick="generateImage()">
                         🚀 Generate AI Photo
                     </button>
+                    <p class="generator-cost-hint" id="photoCostHint" aria-live="polite"></p>
 
-                    <div id="generatedPreview" class="output-area" style="margin-top:20px; text-align:center;">
-                        <p>Image will appear here...</p>
+                    <h3 class="result-heading">Result</h3>
+                    <div id="generatedPreview" class="output-area" aria-live="polite">
+                        <p class="output-placeholder">Image will appear here...</p>
                     </div>
 
                 </div>
@@ -979,20 +743,21 @@
 
                 <div class="editor-section">
                     <h2 class="tab-title"> AI Story Generator</h2>
+                    <p class="generator-subtitle">Give it a topic and characters and get a complete, illustrated-in-words short story.</p>
 
 
                     <div class="input-area">
-                        <label>Story Topic</label>
+                        <label for="storyTopic">Story Topic<span class="required-marker" aria-hidden="true">*</span><span class="sr-only"> required</span></label>
                         <input type="text" id="storyTopic" placeholder="e.g. Friendship, Adventure, Magic School">
                     </div>
 
                     <div class="input-area">
-                        <label>Characters</label>
+                        <label for="storyCharacters">Characters<span class="required-marker" aria-hidden="true">*</span><span class="sr-only"> required</span></label>
                         <input type="text" id="storyCharacters" placeholder="e.g. Raju, fairy, talking dog">
                     </div>
 
                     <div class="input-area">
-                        <label>Length</label>
+                        <label for="storyLength">Length</label>
                         <select id="storyLength">
                             <option value="short">Short</option>
                             <option value="medium">Medium</option>
@@ -1001,20 +766,23 @@
                     </div>
 
                     <div class="input-area">
-                        <label>Additional Details</label>
+                        <label for="storyDetails">Additional Details <span class="optional-hint">(Optional)</span></label>
                         <textarea id="storyDetails" placeholder="Any special twist, emotion, or message you want in the story..."></textarea>
                     </div>
 
                     <button class="generate-btn" onclick="generateStory(event)">✨ Generate Story</button>
+                    <p class="generator-cost-hint" id="storyCostHint" aria-live="polite"></p>
 
-                    <div class="output-area" id="storyOutput">
-                        <p>Your generated story will appear here...</p>
+                    <h3 class="result-heading">Result</h3>
+                    <div class="output-area" id="storyOutput" aria-live="polite">
+                        <p class="output-placeholder">Your generated story will appear here...</p>
                     </div>
                 </div>
 
                 <div class="sidebar">
                     <div class="body-options">
                         <h3>Quick Actions</h3>
+                        <button class="btn btn-secondary" id="copyStoryBtn" onclick="copyStory()">📋 Copy Story</button>
                         <button class="btn btn-primary" onclick="downloadStory()">💾 Download Story</button>
                         <button class="btn btn-secondary" onclick="shareStory()">📤 Share Story</button>
                         <button class="btn btn-secondary" onclick="resetStory()">🔄 Reset</button>
@@ -1031,10 +799,11 @@
 
                 <div class="editor-section">
                     <h2 class="tab-title">📝 Application Writer</h2>
+                    <p class="generator-subtitle">Answer a few prompts and get a formal, ready-to-send application letter.</p>
 
 
                     <div class="input-area">
-                        <label>Application Type</label>
+                        <label for="applicationType">Application Type</label>
                         <select id="applicationType">
                             <option value="job">Job Application</option>
                             <option value="college">College Admission</option>
@@ -1046,40 +815,43 @@
                     </div>
 
                     <div class="input-area">
-                        <label>Your Name</label>
+                        <label for="applicantName">Your Name<span class="required-marker" aria-hidden="true">*</span><span class="sr-only"> required</span></label>
                         <input type="text" id="applicantName" placeholder="e.g. Vivek Tyagi...">
                     </div>
 
                     <div class="input-area">
-                        <label>Purpose / Position</label>
+                        <label for="applicationPurpose">Purpose / Position<span class="required-marker" aria-hidden="true">*</span><span class="sr-only"> required</span></label>
                         <input type="text" id="applicationPurpose" placeholder="e.g. Leave for medical reason">
                     </div>
 
                     <div class="input-area">
-                        <label>Recipient Name/Organization</label>
+                        <label for="recipientName">Recipient Name/Organization<span class="required-marker" aria-hidden="true">*</span><span class="sr-only"> required</span></label>
                         <input type="text" id="recipientName" placeholder="e.g. The Principal, ABC College">
                     </div>
 
                     <div class="input-area">
-                        <label>Your Reason/Details</label>
+                        <label for="applicationReason">Your Reason/Details<span class="required-marker" aria-hidden="true">*</span><span class="sr-only"> required</span></label>
                         <textarea id="applicationReason" placeholder="Explain your reason clearly and politely..."></textarea>
                     </div>
 
                     <div class="input-area">
-                        <label>Additional Info (Optional)</label>
+                        <label for="applicationDetails">Additional Info <span class="optional-hint">(Optional)</span></label>
                         <textarea id="applicationDetails" placeholder="Optional: dates, documents, extra explanation..."></textarea>
                     </div>
 
                     <button class="generate-btn" onclick="generateApplication(event)">📝 Generate Application</button>
+                    <p class="generator-cost-hint" id="applicationCostHint" aria-live="polite"></p>
 
-                    <div class="output-area" id="applicationOutput">
-                        <p>Your generated application will appear here...</p>
+                    <h3 class="result-heading">Result</h3>
+                    <div class="output-area" id="applicationOutput" aria-live="polite">
+                        <p class="output-placeholder">Your generated application will appear here...</p>
                     </div>
                 </div>
 
                 <div class="sidebar">
                     <div class="body-options">
                         <h3>Quick Actions</h3>
+                        <button class="btn btn-secondary" id="copyApplicationBtn" onclick="copyApplication()">📋 Copy</button>
                         <button class="btn btn-primary" onclick="downloadApplication()">💾 Download</button>
                         <button class="btn btn-secondary" onclick="shareApplication()">📤 Share</button>
                         <button class="btn btn-secondary" onclick="resetApplication()">🔄 Reset</button>
@@ -1098,10 +870,11 @@
 
                 <div class="editor-section">
                     <h2 class="tab-title">📑 AI Proposal Maker</h2>
+                    <p class="generator-subtitle">Outline your idea and get a structured, professional proposal document.</p>
 
 
                     <div class="input-area">
-                        <label>Proposal Type</label>
+                        <label for="proposalType">Proposal Type</label>
                         <select id="proposalType">
                             <option value="business">Business Proposal</option>
                             <option value="project">Project Proposal</option>
@@ -1113,39 +886,41 @@
                     </div>
 
                     <div class="input-area">
-                        <label>Proposal Title</label>
+                        <label for="proposalTitle">Proposal Title<span class="required-marker" aria-hidden="true">*</span><span class="sr-only"> required</span></label>
                         <input type="text" id="proposalTitle" placeholder="e.g. AI Based Attendance System">
                     </div>
 
                     <div class="input-area">
-                        <label>Target Audience/Client</label>
+                        <label for="proposalAudience">Target Audience/Client<span class="required-marker" aria-hidden="true">*</span><span class="sr-only"> required</span></label>
                         <input type="text" id="proposalAudience" placeholder="e.g. College Management / Client Name">
                     </div>
 
                     <div class="input-area">
-                        <label>Main Objective</label>
+                        <label for="proposalObjective">Main Objective<span class="required-marker" aria-hidden="true">*</span><span class="sr-only"> required</span></label>
                         <textarea id="proposalObjective" placeholder="What is the main goal of this proposal?"></textarea>
                     </div>
 
                     <div class="input-area">
-                        <label>Key Points / Benefits</label>
+                        <label for="proposalBenefits">Key Points / Benefits<span class="required-marker" aria-hidden="true">*</span><span class="sr-only"> required</span></label>
                         <textarea id="proposalBenefits" placeholder="Key benefits, advantages, outcomes..."></textarea>
                     </div>
 
                     <div class="input-area">
-                        <label>Budget / Timeline (Optional)</label>
+                        <label for="proposalBudget">Budget / Timeline <span class="optional-hint">(Optional)</span></label>
                         <input type="text" id="proposalBudget" placeholder="e.g. ₹25,000 or 3 months timeline">
                     </div>
 
                     <div class="input-area">
-                        <label>Additional Details</label>
+                        <label for="proposalDetails">Additional Details <span class="optional-hint">(Optional)</span></label>
                         <textarea id="proposalDetails" placeholder="Any additional technical or business details..."></textarea>
                     </div>
 
                     <button class="generate-btn" onclick="generateProposal(event)">💼 Generate Proposal</button>
+                    <p class="generator-cost-hint" id="proposalCostHint" aria-live="polite"></p>
 
-                    <div class="output-area" id="proposalOutput">
-                        <p>Your generated proposal will appear here...</p>
+                    <h3 class="result-heading">Result</h3>
+                    <div class="output-area" id="proposalOutput" aria-live="polite">
+                        <p class="output-placeholder">Your generated proposal will appear here...</p>
                     </div>
                 </div>
 
@@ -1153,15 +928,16 @@
                     <div class="content-options">
                         <h3>Proposal Styles</h3>
                         <div class="content-grid">
-                            <div class="content-option" onclick="selectProposalStyle('professional')">💼 Professional</div>
-                            <div class="content-option" onclick="selectProposalStyle('creative')">🎨 Creative</div>
-                            <div class="content-option" onclick="selectProposalStyle('technical')">⚙️ Technical</div>
-                            <div class="content-option" onclick="selectProposalStyle('executive')">👔 Executive Summary</div>
+                            <button type="button" class="content-option" onclick="selectProposalStyle('professional')">💼 Professional</button>
+                            <button type="button" class="content-option" onclick="selectProposalStyle('creative')">🎨 Creative</button>
+                            <button type="button" class="content-option" onclick="selectProposalStyle('technical')">⚙️ Technical</button>
+                            <button type="button" class="content-option" onclick="selectProposalStyle('executive')">👔 Executive Summary</button>
                         </div>
                     </div>
 
                     <div class="body-options">
                         <h3>Quick Actions</h3>
+                        <button class="btn btn-secondary" id="copyProposalBtn" onclick="copyProposal()">📋 Copy Proposal</button>
                         <button class="btn btn-primary" onclick="downloadProposal()">💾 Download Proposal</button>
                         <button class="btn btn-secondary" onclick="shareProposal()">📤 Share Proposal</button>
                         <button class="btn btn-secondary" onclick="resetProposal()">🔄 Reset</button>
@@ -1171,12 +947,848 @@
             </div>
         </div>
 
+{{ ai_request_limits|json_script:"ai-request-limits" }}
+{{ initial_generator_tab|json_script:"initial-generator-tab" }}
+{% comment %}
+PHASE 8 STEP 3: reopen/restore data -- see AI_GENERATORS/views.py
+create(). json_script HTML-escapes and serializes as JSON, so these
+render as plain data even though the values are user-authored text
+(e.g. someone's own application "reason"); the init script below only
+ever assigns them to .value, never innerHTML.
+{% endcomment %}
+{{ restored_inputs|json_script:"restored-inputs" }}
+{{ restored_query_fallback|json_script:"restored-query-fallback" }}
+<!-- PHASE 6 STEP 6.8A: api.js/credits.js are now loaded once, by
+     nav_app.html (via base_app.html above this content block) --
+     removed the duplicate includes that used to be here. Load order is
+     still correct: nav_app.html's <script> tags render and execute
+     before this content block does, so DS.api/DS.credits already exist
+     by the time this page's own scripts (below) run. -->
+<script src="{% static 'js/billing.js' %}"></script>
 <script>
         const CSRF_TOKEN = '{{ csrf_token }}';
 
+        // ========== PHASE 1A — canonical AI request helper ==========
+        //
+        // ONE place that knows how to call /api/ai/: CSRF, request_id,
+        // timeout/network handling, and response.ok/JSON parsing. Every
+        // generator (code/story/application/proposal) below calls this
+        // instead of duplicating fetch() + header logic. See
+        // AI_GENERATORS/api_views.py's module docstring for the server
+        // side of this contract.
+
+        const AI_REQUEST_LIMITS = JSON.parse(
+            document.getElementById("ai-request-limits").textContent
+        );
+        const AI_REQUEST_TIMEOUT_MS = 30000;
+
+        // Prefer the csrftoken cookie (works even if this page were ever
+        // served from cache with a stale {{ csrf_token }} value); fall back
+        // to the server-rendered CSRF_TOKEN if the cookie isn't present yet
+        // (e.g. very first paint before any cookie round-trip).
+        //
+        // PHASE 6 STEP 6.8D: DS.api (nav_app.html, loaded unconditionally
+        // since 6.8A) has its own getCsrfToken() with the same cookie-first
+        // strategy -- deliberately NOT delegated to here. DS.api's fallback
+        // is a <meta name="csrf-token"> tag that base_app.html only renders
+        // for authenticated users (see base_app.html), while this page is
+        // guest-accessible for generation. Delegating would silently drop
+        // the guest-safe fallback this function already has. Two correct,
+        // independent implementations of a small cookie-read, not
+        // unexamined duplication -- kept as category B ("intentionally
+        // retained") rather than merged.
+        function getCsrfToken() {
+            const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+            return match ? decodeURIComponent(match[1]) : CSRF_TOKEN;
+        }
+
+        // Creates one opaque idempotency key for one *logical* AI
+        // generation. Callers keep reusing the same id across automatic or
+        // manual retries of that SAME generation, and only ask for a new
+        // one when the user starts a genuinely new generation (see the
+        // generator functions below, which each keep a small per-generator
+        // "request state" object for exactly this).
+        function newAiRequestId() {
+            if (window.crypto && window.crypto.randomUUID) {
+                return window.crypto.randomUUID().replace(/-/g, "");
+            }
+            // Fallback for browsers without crypto.randomUUID.
+            return "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx".replace(/x/g, () =>
+                Math.floor(Math.random() * 16).toString(16)
+            );
+        }
+
+        /**
+         * Calls /api/ai/ with CSRF + idempotency handled correctly.
+         *
+         * @param {string} prompt
+         * @param {object} opts
+         * @param {string} [opts.feature]   - one of AI_REQUEST_LIMITS.allowedFeatures
+         * @param {string} opts.requestId   - REQUIRED: reuse the same value
+         *        for a retry of the same logical generation; a new value
+         *        for a genuinely new one.
+         * @returns {Promise<{ok: boolean, status: number, data: object|null, error: string|null}>}
+         *        `ok` mirrors response.ok -- callers must check it and MUST
+         *        NOT treat a resolved promise as success on its own (a
+         *        non-2xx status still resolves, it never throws, so a
+         *        missing `if (!result.ok)` check would silently show a
+         *        failed request as if it succeeded).
+         */
+        // PHASE 4B closure: escapeHtml was previously declared inside
+        // generateCode() only, which meant generateStory/generateApplication/
+        // generateProposal's own escapeHtml(...) calls threw a
+        // ReferenceError at runtime on ANY failure path (network error,
+        // insufficient credits, quota exceeded, provider failure, etc.) --
+        // discovered during this phase's forensic audit. Moved to
+        // top-level scope, shared by all 4 generators, so failure states
+        // (Step 6) actually render instead of crashing silently.
+        //
+        // PHASE 7 GOLDEN UI / security sweep: the actual escaping logic
+        // now delegates to DS.util.escapeHtml (static/js/api.js), which
+        // profile.html's activity feed also needed and previously had no
+        // shared implementation to reuse -- one real implementation
+        // instead of two copies that could drift (e.g. the local copy
+        // here didn't escape quotes; the shared one does). Kept as a
+        // local wrapper rather than renaming all 8 call sites below, to
+        // avoid touching working code with no functional need to change.
+        function escapeHtml(text) {
+            return DS.util.escapeHtml(text);
+        }
+
+        // ========== PHASE 4B — AI credit-exhaustion / access-denial UI ==========
+        //
+        // /api/ai/ returns two different error body shapes depending on
+        // where the request was rejected (see AI_GENERATORS/api_views.py):
+        //   - entitlement/quota denial (401/403/429): {"success": false,
+        //     "error": {"code": "...", "message": "..."}}
+        //   - credit reservation denial (402) and provider/validation
+        //     failures: {"error": "plain string", "request_id": "..."}
+        // extractApiError() normalizes both into one {message, code} shape
+        // so the rest of this file (and escapeHtml) always gets a string.
+
+        // PHASE_6_STATE_MACHINE_TESTABLE_BLOCK_START -- see
+        // accounts/tests/test_generator_state_machine.py, which extracts
+        // exactly the source between this marker and the matching _END
+        // marker below and actually executes it under Node to verify
+        // real transition behavior, not just that the source text exists.
+        function extractApiError(data, fallbackMessage) {
+            if (data && typeof data.error === "string") {
+                return { message: data.error, code: null };
+            }
+            if (data && data.error && typeof data.error === "object") {
+                return {
+                    message: data.error.message || fallbackMessage,
+                    code: data.error.code || null,
+                };
+            }
+            return { message: fallbackMessage, code: null };
+        }
+
+        // Which denials mean "the user hit a real ceiling on their current
+        // plan, and Premium would remove it" -- as opposed to a transient
+        // provider/network failure, or an outright feature restriction that
+        // no plan on /plans/ actually lifts (a plan mismatch not covered
+        // simply by "PLAN_NOT_ALLOWED" isn't guessed at here).
+        function isExhaustionError(status, code) {
+            if (status === 402) return true; // InsufficientCreditsError -- credit ledger empty
+            if (status === 429 && code === "QUOTA_EXCEEDED") return true; // entitlement daily/monthly cap
+            if (status === 403 && code === "PLAN_NOT_ALLOWED") return true; // feature gated to a higher plan
+            return false;
+        }
+
+        /**
+         * PHASE 6 STEP 6.3 — formal generator state machine.
+         *
+         * One authoritative status per generator (genState.status),
+         * replacing the informal isGenerating boolean + implicit DOM state
+         * that existed before. Every generator object (codeGenState,
+         * storyGenState, applicationGenState, proposalGenState,
+         * photoGenState) carries its own {requestId, status}; transitions
+         * are only ever applied through setGeneratorState() below -- no
+         * other code in this file assigns genState.status directly (see
+         * PHASE_6_STATE_MACHINE.md for the exact grep proving that).
+         */
+        const GENERATOR_STATES = Object.freeze({
+            IDLE: "IDLE",
+            VALIDATING: "VALIDATING",
+            REQUESTING: "REQUESTING",
+            SUCCESS: "SUCCESS",
+            ERROR: "ERROR",
+            AUTH_REQUIRED: "AUTH_REQUIRED",
+            PLAN_NOT_ALLOWED: "PLAN_NOT_ALLOWED",
+            CREDITS_EXHAUSTED: "CREDITS_EXHAUSTED",
+            QUOTA_EXCEEDED: "QUOTA_EXCEEDED",
+            RATE_LIMITED: "RATE_LIMITED",
+            NETWORK_ERROR: "NETWORK_ERROR",
+        });
+
+        const TERMINAL_STATES = [
+            GENERATOR_STATES.ERROR,
+            GENERATOR_STATES.AUTH_REQUIRED,
+            GENERATOR_STATES.PLAN_NOT_ALLOWED,
+            GENERATOR_STATES.CREDITS_EXHAUSTED,
+            GENERATOR_STATES.QUOTA_EXCEEDED,
+            GENERATOR_STATES.RATE_LIMITED,
+            GENERATOR_STATES.NETWORK_ERROR,
+        ];
+
+        // Every terminal state (success or any failure kind) can go back to
+        // VALIDATING (retry / regenerate) or IDLE (reset / switching
+        // generator); REQUESTING is reachable only from VALIDATING, and can
+        // resolve to exactly one of SUCCESS or a failure state; IDLE can
+        // only ever begin a new attempt via VALIDATING.
+        const GENERATOR_STATE_TRANSITIONS = Object.freeze({
+            [GENERATOR_STATES.IDLE]: [GENERATOR_STATES.VALIDATING],
+            [GENERATOR_STATES.VALIDATING]: [GENERATOR_STATES.REQUESTING, GENERATOR_STATES.ERROR],
+            [GENERATOR_STATES.REQUESTING]: [
+                GENERATOR_STATES.SUCCESS,
+                GENERATOR_STATES.ERROR,
+                GENERATOR_STATES.AUTH_REQUIRED,
+                GENERATOR_STATES.PLAN_NOT_ALLOWED,
+                GENERATOR_STATES.CREDITS_EXHAUSTED,
+                GENERATOR_STATES.QUOTA_EXCEEDED,
+                GENERATOR_STATES.RATE_LIMITED,
+                GENERATOR_STATES.NETWORK_ERROR,
+            ],
+            [GENERATOR_STATES.SUCCESS]: [GENERATOR_STATES.VALIDATING, GENERATOR_STATES.IDLE],
+            [GENERATOR_STATES.ERROR]: [GENERATOR_STATES.VALIDATING, GENERATOR_STATES.IDLE],
+            [GENERATOR_STATES.AUTH_REQUIRED]: [GENERATOR_STATES.VALIDATING, GENERATOR_STATES.IDLE],
+            [GENERATOR_STATES.PLAN_NOT_ALLOWED]: [GENERATOR_STATES.VALIDATING, GENERATOR_STATES.IDLE],
+            [GENERATOR_STATES.CREDITS_EXHAUSTED]: [GENERATOR_STATES.VALIDATING, GENERATOR_STATES.IDLE],
+            [GENERATOR_STATES.QUOTA_EXCEEDED]: [GENERATOR_STATES.VALIDATING, GENERATOR_STATES.IDLE],
+            [GENERATOR_STATES.RATE_LIMITED]: [GENERATOR_STATES.VALIDATING, GENERATOR_STATES.IDLE],
+            [GENERATOR_STATES.NETWORK_ERROR]: [GENERATOR_STATES.VALIDATING, GENERATOR_STATES.IDLE],
+        });
+
+        /**
+         * The ONLY function permitted to assign genState.status. Rejects
+         * (logs + refuses to apply) any transition not present in
+         * GENERATOR_STATE_TRANSITIONS -- e.g. IDLE -> SUCCESS directly, or
+         * REQUESTING -> REQUESTING (which is exactly the double-submit bug
+         * this whole controller exists to prevent). Returns true/false so
+         * callers (and tests) can assert on rejection without relying on
+         * console output.
+         */
+        function setGeneratorState(genState, nextStatus) {
+            const allowed = GENERATOR_STATE_TRANSITIONS[genState.status] || [];
+            if (!allowed.includes(nextStatus)) {
+                console.error(
+                    `Invalid generator state transition: ${genState.status} -> ${nextStatus}`
+                );
+                return false;
+            }
+            genState.status = nextStatus;
+            return true;
+        }
+
+        /**
+         * Maps a failed aiRequest() result onto one of the specific failure
+         * states above, reusing the exact same status/code checks
+         * renderAiFailure() and isExhaustionError() already use (see
+         * AI_GENERATORS/api_views.py for where each status/code originates)
+         * so the state machine and the rendered UI can never disagree
+         * about what kind of failure just happened. status 0 is aiRequest()'s
+         * own sentinel for "never reached the server" (prompt-too-long,
+         * network error, or client-side timeout via AbortController).
+         */
+        function classifyFailureState(result) {
+            if (result.status === 0) return GENERATOR_STATES.NETWORK_ERROR;
+            if (result.status === 401) return GENERATOR_STATES.AUTH_REQUIRED;
+            if (result.status === 402) return GENERATOR_STATES.CREDITS_EXHAUSTED;
+            const parsed = extractApiError(result.data, "");
+            if (result.status === 429 && parsed.code === "QUOTA_EXCEEDED") return GENERATOR_STATES.QUOTA_EXCEEDED;
+            if (result.status === 429) return GENERATOR_STATES.RATE_LIMITED;
+            if (result.status === 403 && parsed.code === "PLAN_NOT_ALLOWED") return GENERATOR_STATES.PLAN_NOT_ALLOWED;
+            return GENERATOR_STATES.ERROR;
+        }
+        // PHASE_6_STATE_MACHINE_TESTABLE_BLOCK_END
+
+        /**
+         * Renders a failure into `outputEl`, choosing between three real
+         * states -- normal error, sign-in-required, or credit/plan
+         * exhaustion with a functional Upgrade CTA -- never a generic
+         * "Something went wrong" when the server told us more.
+         */
+        function renderAiFailure(outputEl, result, retryFn) {
+            var fallback = "Request failed (" + result.status + ").";
+            var parsed = extractApiError(result.data, (typeof result.error === "string" && result.error) || fallback);
+
+            if (result.status === 401) {
+                renderSignInRequired(outputEl, parsed.message);
+                return;
+            }
+            if (isExhaustionError(result.status, parsed.code)) {
+                renderExhaustionCard(outputEl, parsed.message);
+                return;
+            }
+            // PHASE 7 STEP 7.9: a plain 429 (rate limit, NOT the entitlement
+            // QUOTA_EXCEEDED case already handled by isExhaustionError above)
+            // gets its own honest rendering with the real Retry-After wait
+            // time the backend already sends, instead of falling into the
+            // generic red-text branch below with no guidance on when to
+            // retry.
+            if (result.status === 429) {
+                renderRateLimited(outputEl, parsed.message, result.retryAfter);
+                return;
+            }
+            // PHASE 8 STEP 6 -- Result Management / Retry.
+            //
+            // Retry already worked mechanically before this change --
+            // runGeneratorLifecycle() deliberately keeps genState.requestId
+            // on any failure path so clicking the SAME Generate button
+            // again reuses it (server-side idempotency, no double charge;
+            // see /api/ai/'s request_id contract). What was missing was
+            // discoverability: this generic failure branch was static red
+            // text with no affordance at all, so a user had to already
+            // know to scroll back up and click Generate again. `retryFn`
+            // (passed through from each generator's own config -- see
+            // generateCode()/generateImage()/generateStory()/
+            // generateApplication()/generateProposal() below) is that same
+            // generator's own entry function, so clicking Retry here is
+            // IDENTICAL to clicking Generate again -- not a second,
+            // divergent retry path.
+            if (retryFn) {
+                outputEl.innerHTML = "";
+                var errCard = document.createElement("div");
+                var msgSpan = document.createElement("span");
+                msgSpan.style.color = "var(--danger-color)";
+                msgSpan.style.fontWeight = "bold";
+                msgSpan.textContent = "\u274c " + parsed.message;
+                errCard.appendChild(msgSpan);
+                var retryBtn = document.createElement("button");
+                retryBtn.type = "button";
+                retryBtn.className = "retry-btn";
+                retryBtn.textContent = "Retry";
+                retryBtn.style.display = "block";
+                retryBtn.style.marginTop = "10px";
+                retryBtn.addEventListener("click", retryFn);
+                errCard.appendChild(retryBtn);
+                outputEl.appendChild(errCard);
+                return;
+            }
+            outputEl.innerHTML = `<span style="color:var(--danger-color);font-weight:bold;">\u274c ${escapeHtml(parsed.message)}</span>`;
+        }
+
+        /**
+         * PHASE 7 STEP 7.9 — plain rate-limit denial (not entitlement
+         * quota). `retryAfterSeconds` is the REAL value the backend sent
+         * via its Retry-After header (accounts/rate_limit.py's
+         * check_ai_rate_limit()) -- never invented client-side. When it's
+         * unavailable (header missing/unparseable) the wait-time line is
+         * simply omitted rather than showing a made-up number.
+         */
+        function renderRateLimited(outputEl, message, retryAfterSeconds) {
+            outputEl.innerHTML = "";
+            var card = document.createElement("div");
+            card.className = "ai-exhaustion-card";
+
+            var title = document.createElement("div");
+            title.className = "ai-exhaustion-title";
+            title.textContent = "Slow down a little";
+            card.appendChild(title);
+
+            var msg = document.createElement("div");
+            msg.className = "ai-exhaustion-message";
+            msg.textContent = message;
+            card.appendChild(msg);
+
+            if (retryAfterSeconds) {
+                var wait = document.createElement("div");
+                wait.className = "ai-exhaustion-message";
+                wait.textContent = `You can try again in about ${retryAfterSeconds} second${retryAfterSeconds === 1 ? "" : "s"}.`;
+                card.appendChild(wait);
+            }
+
+            outputEl.appendChild(card);
+        }
+
+        /**
+         * PHASE 6 STEP 6.2 — canonical generator controller.
+         *
+         * Extracts the ~15-line wrapper that was independently duplicated
+         * in every one of the 5 generator functions around the ALREADY
+         * shared aiRequest()/renderAiFailure() core (see
+         * PHASE_6_WORKSPACE_ARCHITECTURE.md for why only this outer layer,
+         * not the whole request/error lifecycle, needed extracting).
+         *
+         * Owns: duplicate-submission guard, requestId lifecycle (new on a
+         * fresh generation, reused across a retry of a failed one, cleared
+         * on success), button disabled state, the loading placeholder,
+         * calling aiRequest()/renderAiFailure(), the credit-pill refresh
+         * and history save on success, and the generic catch/finally.
+         *
+         * Generator-specific behavior is injected via `config`, never
+         * hardcoded here. Two real behavioral differences exist across the
+         * five original generators (confirmed by reading all five before
+         * migrating any of them -- see PHASE_6_WORKSPACE_ARCHITECTURE.md):
+         *   - Code/Photo replace outputEl with a loading placeholder;
+         *     Story/Application/Proposal never touch their output element
+         *     during loading (only the button's own text changes) --
+         *     `skipOutputLoading` preserves that instead of forcing one
+         *     behavior onto all five.
+         *   - Story/Application/Proposal render `Error: ${err.message}`
+         *     into their output element on an unexpected exception;
+         *     Code/Photo render a generic "Something went wrong" --
+         *     `onException` preserves each generator's original text
+         *     instead of silently unifying it as a side effect of this
+         *     refactor.
+         *
+         *   genState        - the generator's own {requestId, status} object
+         *                     (status is one of GENERATOR_STATES -- see
+         *                     PHASE 6 STEP 6.3 below -- driven only through
+         *                     setGeneratorState(), never assigned directly)
+         *   outputEl        - element to show loading/result/error in
+         *   genBtn          - button to disable while generating (may be null)
+         *   validate()      - return a user-facing string to abort with an
+         *                     alert (matches this project's existing pattern,
+         *                     e.g. "Please enter what code you want!"), or
+         *                     falsy to proceed
+         *   skipOutputLoading - if true, don't touch outputEl.innerHTML when
+         *                     the request starts (matches the original
+         *                     Story/Application/Proposal behavior)
+         *   loadingHtml     - string shown in outputEl when starting (ignored
+         *                     if skipOutputLoading is true); defaults to the
+         *                     original generic spinner div
+         *   genBtnLoadingHtml / genBtnIdleHtml - if provided, set/restore
+         *                     genBtn.innerHTML (not just .disabled) around
+         *                     the request, matching each generator's own
+         *                     original button text
+         *   buildPrompt()   - returns the final prompt string sent to /api/ai/
+         *   feature         - the /api/ai/ feature slug
+         *   onSuccess(data) - renders the result into outputEl; return value
+         *                     is ignored, but it may throw (same generic/
+         *                     onException catch below still applies)
+         *   historyQuery(data) - returns the `query` string for saveHistorySafe(),
+         *                        or null/undefined to skip saving history
+         *   onException(err) - optional override of the generic exception
+         *                     rendering; defaults to the original Code/Photo
+         *                     "Something went wrong" message
+         */
+        async function runGeneratorLifecycle(genState, config) {
+            if (genState.status === GENERATOR_STATES.REQUESTING) return; // prevent duplicate clicks
+
+            // A fresh attempt always starts from IDLE (first ever run) or a
+            // terminal state (retry/regenerate after success or failure) --
+            // both allow -> VALIDATING. See GENERATOR_STATE_TRANSITIONS.
+            if (!setGeneratorState(genState, GENERATOR_STATES.VALIDATING)) return;
+
+            if (config.validate) {
+                const validationError = config.validate();
+                if (validationError) {
+                    setGeneratorState(genState, GENERATOR_STATES.ERROR);
+                    alert(validationError);
+                    return;
+                }
+            }
+
+            if (!genState.requestId) {
+                genState.requestId = newAiRequestId();
+            }
+            const myRequestId = genState.requestId;
+            // PHASE 8 STEP 8/9 -- Request/state robustness. If, while this
+            // attempt is in flight, the user hits Reset (which clears
+            // genState.requestId -- see the shared
+            // resetGeneratorWorkspace() helper below) or somehow starts a
+            // fresh attempt that gets a new id, genState.requestId will no
+            // longer equal myRequestId once the id-mismatch check below
+            // runs, and `stale` is set true. Every DOM write and state
+            // transition after that point is skipped, so a response
+            // arriving after a reset can never overwrite what the user
+            // reset to, and two overlapping attempts can never fight over
+            // the same button/output element (PHASE_8 spec sec.9: "no
+            // stuck loading state", "no stale result replacing a newer
+            // result"). Recomputed once at settle time rather than a live
+            // re-check throughout, because the success branch itself sets
+            // genState.requestId = null on its own successful completion --
+            // a live check there would wrongly read the attempt that just
+            // succeeded as "stale".
+            let stale = false;
+
+            setGeneratorState(genState, GENERATOR_STATES.REQUESTING);
+            if (config.genBtn) {
+                config.genBtn.disabled = true;
+                if (config.genBtnLoadingHtml !== undefined) {
+                    config.genBtn.innerHTML = config.genBtnLoadingHtml;
+                }
+            }
+            if (!config.skipOutputLoading) {
+                config.outputEl.innerHTML = config.loadingHtml || "<div class='loading'>⏳ Generating...</div>";
+            }
+            if (config.statusBadgeId) {
+                setGeneratorStatusBadge(config.statusBadgeId, config.feature, true);
+            }
+
+            try {
+                const result = await aiRequest(config.buildPrompt(), {
+                    feature: config.feature,
+                    requestId: genState.requestId,
+                });
+
+                if (genState.requestId !== myRequestId) { stale = true; return; } // superseded by a reset/new attempt while this was in flight
+
+                if (!result.ok) {
+                    setGeneratorState(genState, classifyFailureState(result));
+                    renderAiFailure(config.outputEl, result, config.retryFn);
+                    // Keep requestId so a retry click reuses it (same logical
+                    // generation) — do NOT reset genState.requestId here.
+                    return;
+                }
+
+                // Success: this logical generation is done — the NEXT click
+                // starts a new one with a fresh id.
+                setGeneratorState(genState, GENERATOR_STATES.SUCCESS);
+                genState.requestId = null;
+                refreshCreditPill();
+                // PHASE 6 STEP 6.5: quota/entitlement state can change as a
+                // direct result of a successful generation (daily/monthly
+                // usage counted), same reasoning as the credit refresh
+                // right above.
+                if (typeof refreshEntitlementBanner === "function") {
+                    refreshEntitlementBanner();
+                }
+
+                const data = result.data;
+                config.onSuccess(data);
+
+                if (config.historyQuery) {
+                    const query = config.historyQuery(data);
+                    if (query) {
+                        // PHASE 8 STEP 2/3: historyInputs (new, optional) is the
+                        // generator's actual structured form fields, captured
+                        // alongside the existing lossy `query` label -- see
+                        // accounts/history_input_schema.py for the server-side
+                        // whitelist this is validated against before it's ever
+                        // stored. Generators that don't define historyInputs
+                        // (none currently) just save {} like before this field
+                        // existed.
+                        const inputs = config.historyInputs ? config.historyInputs() : {};
+                        saveHistorySafe(query, data.result, config.feature, inputs);
+                    }
+                }
+            } catch (e) {
+                if (genState.requestId !== myRequestId) { stale = true; return; }
+                setGeneratorState(genState, GENERATOR_STATES.ERROR);
+                if (config.onException) {
+                    config.onException(e);
+                } else {
+                    config.outputEl.innerHTML = `
+                        <span style="color:var(--warning-color);font-weight:bold;">
+                        ⚠️ Something went wrong. Please try again.
+                        </span>`;
+                }
+            } finally {
+                // A stale attempt must not touch the button/badge that the
+                // newer, still-in-flight attempt (or the user's post-reset
+                // idle workspace) now owns.
+                if (!stale) {
+                    if (config.genBtn) {
+                        config.genBtn.disabled = false;
+                        if (config.genBtnIdleHtml !== undefined) {
+                            config.genBtn.innerHTML = config.genBtnIdleHtml;
+                        }
+                    }
+                    // PHASE 7 STEP 3: runs on every exit path (success,
+                    // failure, or an unhandled exception) -- the one correct
+                    // place to stop saying "Generating…" no matter how the
+                    // request settled.
+                    if (config.statusBadgeId) {
+                        setGeneratorStatusBadge(config.statusBadgeId, config.feature, false);
+                    }
+                }
+            }
+        }
+
+        // PHASE 8 STEP 8/9 -- Result Management / Request robustness.
+        //
+        // Shared by every generator's Reset button (resetCodeGenerator(),
+        // resetEditor(), resetStory(), resetApplication(), resetProposal()
+        // below). Clearing genState.requestId here is what makes the
+        // `stale` check inside runGeneratorLifecycle() work: if a request
+        // for this generator is still in flight when Reset is clicked, its
+        // eventual response will find genState.requestId no longer matches
+        // the id it was sent with, and will discard itself instead of
+        // overwriting the just-reset workspace (see that function's own
+        // comment for the full reasoning).
+        //
+        // The IDLE transition itself goes through setGeneratorState() (not
+        // a direct assignment) so GENERATOR_STATE_TRANSITIONS still decides
+        // whether it's actually valid -- e.g. resetting from REQUESTING
+        // straight to IDLE is intentionally not a legal transition, so this
+        // leaves genState.status exactly where classifyFailureState()/
+        // SUCCESS will still validly land it once that in-flight request's
+        // (now-discarded) response arrives, rather than silently forcing
+        // the state machine into a shape it never agreed to.
+        function resetGeneratorWorkspace(genState) {
+            genState.requestId = null;
+            if (genState.status !== GENERATOR_STATES.IDLE) {
+                setGeneratorState(genState, GENERATOR_STATES.IDLE);
+            }
+        }
+
+        function renderSignInRequired(outputEl, message) {
+            outputEl.innerHTML = "";
+            var card = document.createElement("div");
+            card.className = "ai-exhaustion-card";
+            var title = document.createElement("div");
+            title.className = "ai-exhaustion-title";
+            title.textContent = "Sign in required";
+            var msg = document.createElement("div");
+            msg.className = "ai-exhaustion-message";
+            msg.textContent = message;
+            var btn = document.createElement("a");
+            btn.className = "ai-exhaustion-cta";
+            btn.href = "/login/?next=" + encodeURIComponent(window.location.pathname);
+            btn.textContent = "Log in";
+            card.appendChild(title);
+            card.appendChild(msg);
+            card.appendChild(btn);
+            outputEl.appendChild(card);
+        }
+
+        /**
+         * Real credit/plan-exhaustion state (Step 3). For a signed-in user
+         * the CTA drives window.BillingFlow directly -- the SAME state
+         * machine plans.html/profile.html use (Step 4: one billing flow,
+         * not a duplicate). For a guest, purchasing requires an account
+         * first (create-order is @login_required), so the CTA is a sign-in
+         * link instead of a fake purchase button.
+         */
+        function renderExhaustionCard(outputEl, message, title) {
+            outputEl.innerHTML = "";
+            var card = document.createElement("div");
+            card.className = "ai-exhaustion-card";
+
+            var titleEl = document.createElement("div");
+            titleEl.className = "ai-exhaustion-title";
+            titleEl.textContent = title || "Credits exhausted";
+            card.appendChild(titleEl);
+
+            var msg = document.createElement("div");
+            msg.className = "ai-exhaustion-message";
+            msg.textContent = message;
+            card.appendChild(msg);
+
+            if (!IS_AUTHENTICATED) {
+                var loginBtn = document.createElement("a");
+                loginBtn.className = "ai-exhaustion-cta";
+                loginBtn.href = "/login/?next=" + encodeURIComponent(window.location.pathname);
+                loginBtn.textContent = "Sign in to upgrade";
+                card.appendChild(loginBtn);
+                outputEl.appendChild(card);
+                return;
+            }
+
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "ai-exhaustion-cta";
+            btn.textContent = "View Premium";
+            card.appendChild(btn);
+
+            var banner = document.createElement("div");
+            banner.className = "billing-status-banner";
+            var spinner = document.createElement("span");
+            spinner.className = "spinner";
+            var text = document.createElement("span");
+            var retry = document.createElement("button");
+            retry.type = "button";
+            retry.className = "retry-btn";
+            retry.textContent = "Try Again";
+            retry.style.display = "none";
+            banner.appendChild(spinner);
+            banner.appendChild(text);
+            banner.appendChild(retry);
+            card.appendChild(banner);
+
+            outputEl.appendChild(card);
+
+            if (!window.BillingFlow) {
+                // billing.js failed to load -- fall back to a real link
+                // rather than a dead/fake button.
+                btn.disabled = false;
+                var fallbackLink = document.createElement("a");
+                fallbackLink.href = "/plans/";
+                fallbackLink.className = "ai-exhaustion-cta";
+                fallbackLink.textContent = "View Premium";
+                card.replaceChild(fallbackLink, btn);
+                return;
+            }
+
+            var flow = window.BillingFlow.create({
+                onStateChange: function (state, stateMessage, extra) {
+                    var STATES = window.BillingFlow.STATES;
+                    banner.classList.add("visible");
+                    banner.classList.remove("state-success", "state-failed", "state-error");
+                    retry.style.display = "none";
+                    text.textContent = (extra && extra.message) || stateMessage;
+
+                    if (state === STATES.IDLE) {
+                        banner.classList.remove("visible");
+                        btn.disabled = false;
+                        btn.textContent = "View Premium";
+                        return;
+                    }
+                    if (state === STATES.SUCCESS) {
+                        banner.classList.add("state-success");
+                        btn.disabled = true;
+                        onExhaustionUpgradeSuccess(card, outputEl);
+                        return;
+                    }
+                    if (window.BillingFlow.RETRYABLE_STATES[state]) {
+                        banner.classList.add("state-failed");
+                        retry.style.display = "inline-block";
+                        btn.disabled = false;
+                        btn.textContent = "Try Again";
+                        return;
+                    }
+                    btn.disabled = true;
+                    btn.textContent = stateMessage;
+                },
+            });
+
+            btn.addEventListener("click", function () {
+                btn.disabled = true;
+                flow.upgrade({ plan: "PREMIUM", billingInterval: "MONTHLY" });
+            });
+            retry.addEventListener("click", function () {
+                flow.reset();
+                flow.upgrade({ plan: "PREMIUM", billingInterval: "MONTHLY" });
+            });
+        }
+
+        /**
+         * Step 5/9: after Payment=CAPTURED + Subscription=ACTIVE (BillingFlow
+         * only reaches SUCCESS after both are true), re-derive access from
+         * the existing entitlement API rather than assuming -- no client-
+         * side isPremium flag is ever set. The user's very next click on
+         * the page's own Generate button re-runs aiRequest() for real, so
+         * this only needs to confirm access and let them know they can go
+         * ahead -- it does not need to trigger a generation itself.
+         */
+        function onExhaustionUpgradeSuccess(card, outputEl) {
+            fetch("/api/entitlements/", { credentials: "same-origin" })
+                .then(function (r) { return r.json(); })
+                .then(function () {
+                    outputEl.innerHTML = "";
+                    var confirmCard = document.createElement("div");
+                    confirmCard.className = "ai-exhaustion-card ai-exhaustion-card--success";
+                    var title = document.createElement("div");
+                    title.className = "ai-exhaustion-title";
+                    title.textContent = "Premium activated \uD83C\uDF89";
+                    var msg = document.createElement("div");
+                    msg.className = "ai-exhaustion-message";
+                    msg.textContent = "You're all set — click Generate to continue.";
+                    confirmCard.appendChild(title);
+                    confirmCard.appendChild(msg);
+                    outputEl.appendChild(confirmCard);
+                })
+                .catch(function () {
+                    // Entitlement refresh failing doesn't undo the payment --
+                    // Payment=CAPTURED is already server-side fact. Just
+                    // let the user's next Generate click re-check for real.
+                    var msg = document.createElement("div");
+                    msg.className = "ai-exhaustion-message";
+                    msg.textContent = "Premium activated. Click Generate to continue.";
+                    card.appendChild(msg);
+                });
+        }
+
+        async function aiRequest(prompt, { feature, requestId } = {}) {
+            if (!requestId) {
+                throw new Error("aiRequest() requires a requestId (see newAiRequestId()).");
+            }
+            if (prompt.length > AI_REQUEST_LIMITS.maxPromptChars) {
+                return {
+                    ok: false,
+                    status: 0,
+                    data: null,
+                    error: `Prompt is too long (max ${AI_REQUEST_LIMITS.maxPromptChars} characters).`,
+                };
+            }
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), AI_REQUEST_TIMEOUT_MS);
+
+            let response;
+            try {
+                response = await fetch("/api/ai/", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCsrfToken(),
+                    },
+                    body: JSON.stringify({ prompt, feature, request_id: requestId }),
+                    signal: controller.signal,
+                });
+            } catch (err) {
+                const isTimeout = err.name === "AbortError";
+                return {
+                    ok: false,
+                    status: 0,
+                    data: null,
+                    error: isTimeout
+                        ? "The request timed out. You can retry — it will not be charged twice."
+                        : "Network error. Please check your connection and try again.",
+                };
+            } finally {
+                clearTimeout(timeoutId);
+            }
+
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (err) {
+                return {
+                    ok: false,
+                    status: response.status,
+                    data: null,
+                    error: "The server sent an unreadable response.",
+                };
+            }
+
+            // response.ok is the single source of truth for success — a
+            // 4xx/5xx with a well-formed JSON body is still a failure.
+            if (!response.ok) {
+                // PHASE 7 STEP 7.9: the backend already sends a real
+                // Retry-After header on plain rate-limit denials (see
+                // accounts/rate_limit.py's check_ai_rate_limit() /
+                // AI_GENERATORS/api_views.py's 429 branch) that Phase 6
+                // computed but the frontend never read -- carried through
+                // here so renderRateLimited() below can show an honest
+                // wait time instead of a generic error with no guidance.
+                const retryAfterHeader = response.headers.get("Retry-After");
+                const retryAfter = retryAfterHeader ? parseInt(retryAfterHeader, 10) : null;
+                return {
+                    ok: false,
+                    status: response.status,
+                    data,
+                    error: (data && data.error) || `Request failed (${response.status}).`,
+                    retryAfter: Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : null,
+                };
+            }
+
+            return { ok: true, status: response.status, data, error: null };
+        }
 
         // Tab Switching
-        function switchTab(tabName, btn) {
+        //
+        // PHASE 6 STEP 7 (deep linking) / GAP-05. TAB_ID_TO_GENERATOR_PARAM
+        // is the exact reverse of AI_GENERATORS/views.py's
+        // _DEEP_LINK_FEATURE_TO_TAB_ID -- same whitelist, both directions,
+        // so a URL this page produces is always one AI_GENERATORS/views.py
+        // itself recognizes. `updateUrl` is false only for the one
+        // programmatic call driven BY a URL change (initial load, and
+        // popstate below) -- every real click still pushes/replaces
+        // history normally.
+        const TAB_ID_TO_GENERATOR_PARAM = {
+            photo: "photo",
+            story: "story",
+            application: "application",
+            proposal: "proposal",
+            codecreator: "code",
+        };
+
+        function switchTab(tabName, btn, updateUrl = true) {
         // hide all tabs
         document.querySelectorAll('.tab-content').forEach(t => {
             t.classList.remove('active');
@@ -1185,22 +1797,409 @@
         // remove active from all nav buttons
         document.querySelectorAll('.nav-tab').forEach(b => {
             b.classList.remove('active');
+            // PHASE 6 STEP 6.9: keep the accessible "current tab" state in
+            // sync with the visual one -- a screen reader has no other way
+            // to know which generator is selected, since .active is a
+            // purely visual CSS class.
+            b.setAttribute('aria-current', 'false');
         });
 
         // show selected tab
         const tab = document.getElementById(tabName + "-tab");
         if (tab) tab.classList.add('active');
 
-        // highlight clicked button
-        if (btn) btn.classList.add('active');
+        // PHASE 6 STEP 6.3: switching generators clears any terminal
+        // state (SUCCESS/ERROR/AUTH_REQUIRED/...) left over from a
+        // previous attempt on any generator -- so returning to a
+        // generator later always starts a genuinely fresh attempt rather
+        // than silently carrying a stale status forward. A generator
+        // still REQUESTING is deliberately left alone: switching tabs
+        // does not cancel an in-flight request (its result/credit-refund
+        // still needs to land correctly when it resolves), only clears
+        // finished (terminal) state.
+        [codeGenState, photoGenState, storyGenState, applicationGenState, proposalGenState].forEach((gs) => {
+            if (TERMINAL_STATES.includes(gs.status)) {
+                setGeneratorState(gs, GENERATOR_STATES.IDLE);
+            }
+        });
+
+        // highlight clicked button (falls back to a lookup by data-tab so
+        // programmatic calls -- deep link on load, popstate -- don't need
+        // a live event's `this` to know which button to highlight)
+        const targetBtn = btn || document.querySelector(`.nav-tab[data-tab="${tabName}"]`);
+        if (targetBtn) {
+            targetBtn.classList.add('active');
+            targetBtn.setAttribute('aria-current', 'true');
+        }
+
+        if (updateUrl) {
+            const param = TAB_ID_TO_GENERATOR_PARAM[tabName];
+            const url = new URL(window.location.href);
+            if (param) {
+                url.searchParams.set("generator", param);
+            } else {
+                url.searchParams.delete("generator");
+            }
+            history.pushState({ tab: tabName }, "", url);
+        }
+
+        // PHASE 6 STEP 6.5: the entitlement banner is per-generator, so it
+        // must re-check on every switch, not just on initial page load.
+        if (typeof refreshEntitlementBanner === "function") {
+            refreshEntitlementBanner();
+        }
     }
+
+    // Deep link on initial load: server already validated the value
+    // against the same whitelist (AI_GENERATORS/views.py), so this is
+    // trusted JSON, never raw query-string text -- no injection surface.
+    // `false` = don't re-push history for a selection the URL already
+    // reflects.
+    document.addEventListener("DOMContentLoaded", function () {
+        const raw = document.getElementById("initial-generator-tab");
+        const initialTab = raw ? JSON.parse(raw.textContent) : null;
+        if (initialTab) {
+            // switchTab() itself calls refreshEntitlementBanner() (see its
+            // own PHASE 6 STEP 6.5 comment) -- deliberately NOT calling it
+            // again below in this branch. PHASE 8 STEP 10 (performance
+            // audit) found that before this fix, the standalone
+            // `document.addEventListener("DOMContentLoaded",
+            // refreshEntitlementBanner)` below fired unconditionally on
+            // every load while ALSO being called from here via switchTab()
+            // whenever a deep link was present -- two /api/entitlements/
+            // requests firing on the same page load for the exact same
+            // banner state. That standalone listener has been removed;
+            // this branch and the else below are now the only two paths,
+            // and they're mutually exclusive, so page load makes exactly
+            // one entitlement check either way.
+            switchTab(initialTab, null, false);
+        } else if (typeof refreshEntitlementBanner === "function") {
+            refreshEntitlementBanner();
+        }
+        restoreReopenedInputs();
+    });
+
+    // PHASE 8 STEP 3 -- History -> generator continuity.
+    //
+    // restored-inputs (present only when ?reopen=<id> resolved to a real,
+    // same-user, same-feature ChatHistory row with structured `inputs` on
+    // record -- see AI_GENERATORS/views.py create()) is {dom_id: value}.
+    // Every value is written with .value = ..., never innerHTML/insertAdjacentHTML,
+    // so this cannot introduce markup even though the values are the
+    // user's own previously-submitted text.
+    //
+    // restored-query-fallback is the plain ChatHistory.query string, used
+    // ONLY when the row predates structured inputs (inputs == {}) -- it
+    // genuinely doesn't know the individual form fields, so it restores
+    // the one thing it does know (the saved query/label) into that
+    // generator's primary free-text field instead of leaving every field
+    // silently empty with no explanation, and never invents the other
+    // fields. Reset buttons already exist per generator (Phase 5/6) if the
+    // user wants to discard the restored text.
+    const _PRIMARY_FIELD_BY_FEATURE = {
+        photo: "imagePrompt",
+        code: "codePrompt",
+        story: "storyDetails",
+        application: "applicationDetails",
+        proposal: "proposalDetails",
+    };
+
+    function restoreReopenedInputs() {
+        const inputsRaw = document.getElementById("restored-inputs");
+        const restoredInputs = inputsRaw ? JSON.parse(inputsRaw.textContent) : null;
+        if (restoredInputs) {
+            Object.keys(restoredInputs).forEach(function (domId) {
+                const el = document.getElementById(domId);
+                if (el) {
+                    el.value = restoredInputs[domId];
+                    if (typeof autoResize === "function" && el.tagName === "TEXTAREA") {
+                        autoResize(el);
+                    }
+                }
+            });
+            return;
+        }
+
+        const fallbackRaw = document.getElementById("restored-query-fallback");
+        const fallback = fallbackRaw ? JSON.parse(fallbackRaw.textContent) : null;
+        if (!fallback) return;
+
+        const initialTabRaw = document.getElementById("initial-generator-tab");
+        const initialTab = initialTabRaw ? JSON.parse(initialTabRaw.textContent) : null;
+        const feature = TAB_ID_TO_GENERATOR_PARAM[initialTab];
+        const targetId = _PRIMARY_FIELD_BY_FEATURE[feature];
+        const el = targetId && document.getElementById(targetId);
+        if (el) {
+            el.value = fallback;
+            if (typeof autoResize === "function" && el.tagName === "TEXTAREA") {
+                autoResize(el);
+            }
+        }
+    }
+
+    // Browser back/forward: re-derive the tab from the URL rather than
+    // trusting popstate's state object alone (a fresh navigation into the
+    // page's history from an external link has no pushed state at all).
+    window.addEventListener("popstate", function () {
+        const param = new URLSearchParams(window.location.search).get("generator");
+        const tabId = Object.keys(TAB_ID_TO_GENERATOR_PARAM).find(
+            (id) => TAB_ID_TO_GENERATOR_PARAM[id] === param
+        );
+        switchTab(tabId || "photo", null, false);
+    });
 
 
 
 
         const IS_AUTHENTICATED = {{ request.user.is_authenticated|yesno:"true,false" }};
 
-        function saveHistorySafe(query, response) {
+        // PHASE 5 STEP 3: mount once on load, then re-run after every
+        // successful generation (credits are only ever debited
+        // server-side, after a successful provider call -- see
+        // AI_GENERATORS/api_views.py -- so the displayed balance would
+        // otherwise go stale the moment a generation succeeds).
+        function refreshCreditPill() {
+            if (window.DS && window.DS.credits) { window.DS.credits.mount(); }
+        }
+        document.addEventListener("DOMContentLoaded", refreshCreditPill);
+
+        // PHASE 7 STEP 7.4: cost transparency. Fetches the real,
+        // server-computed per-feature cost (GET /api/ai/costs/, backed
+        // by the same accounts.credit_config.estimate_reservation_credits()
+        // the reservation path itself uses -- see accounts/entitlement_views.py)
+        // ONCE on load and paints it next to each Generate button, so cost
+        // is visible before submission instead of only after (Phase 6's
+        // credit pill only ever showed the current balance, never what a
+        // generation would cost). Never re-fetched per keystroke/generator
+        // switch -- the numbers are feature-level, not input-dependent, so
+        // one fetch for the whole page load is correct and avoids the
+        // unnecessary-repeated-API-call anti-pattern Phase 7's performance
+        // pass explicitly calls out.
+        const GENERATOR_COST_HINT_ELEMENT_IDS = {
+            code: "codeCostHint",
+            photo: "photoCostHint",
+            story: "storyCostHint",
+            application: "applicationCostHint",
+            proposal: "proposalCostHint",
+        };
+
+        function renderCostHint(elId, entry) {
+            const el = document.getElementById(elId);
+            if (!el || !entry) return;
+            el.textContent = entry.billing === "flat"
+                ? `Costs ${entry.credits} credit${entry.credits === 1 ? "" : "s"} per generation`
+                : `Costs at least ${entry.minimum_credits} credit${entry.minimum_credits === 1 ? "" : "s"} (scales with length)`;
+        }
+
+        // PHASE 7 STEP 3 -- cached so setGeneratorStatusBadge() below can
+        // restore the real cost line after a transient "Generating…"
+        // status, without a second network round trip.
+        let LAST_FETCHED_GENERATOR_COSTS = null;
+
+        function loadGeneratorCostHints() {
+            fetch("/api/ai/costs/", { credentials: "same-origin" })
+                .then((res) => (res.ok ? res.json() : null))
+                .then((body) => {
+                    if (!body || !body.costs) return; // fail silently -- this is a
+                    // secondary informational hint, not something that should
+                    // block or error out the workspace if the fetch fails.
+                    LAST_FETCHED_GENERATOR_COSTS = body.costs;
+                    Object.entries(GENERATOR_COST_HINT_ELEMENT_IDS).forEach(([slug, elId]) => {
+                        renderCostHint(elId, body.costs[slug]);
+                    });
+                })
+                .catch(() => { /* informational only -- no user-facing error */ });
+        }
+        document.addEventListener("DOMContentLoaded", loadGeneratorCostHints);
+
+        /**
+         * PHASE 7 STEP 3 -- visually distinct in-flight status, reusing
+         * the SAME GENERATOR_STATES enum runGeneratorLifecycle() already
+         * drives (not a second state system) and the SAME cost-hint
+         * element each generator already has (Step 7.4), rather than
+         * adding five more DOM nodes. While a request is REQUESTING, the
+         * cost line is temporarily replaced with a live status message;
+         * once the request settles (success or failure), the real cost
+         * line is restored from the cached /api/ai/costs/ response --
+         * the actual error/success detail itself is already shown in the
+         * generator's own output area by renderAiFailure()/onSuccess(),
+         * this badge only needs to stop saying "Generating…" once it's
+         * no longer true.
+         */
+        function setGeneratorStatusBadge(elId, slug, generating) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            if (generating) {
+                el.textContent = "⏳ Generating…";
+                el.setAttribute("data-status", "generating");
+                return;
+            }
+            el.removeAttribute("data-status");
+            const cached = LAST_FETCHED_GENERATOR_COSTS && LAST_FETCHED_GENERATOR_COSTS[slug];
+            if (cached) {
+                renderCostHint(elId, cached);
+            } else {
+                el.textContent = "";
+            }
+        }
+
+        /**
+         * PHASE 6 STEP 6.5 — entitlement/access UX.
+         *
+         * Human-readable copy for each of the REAL denial reason codes
+         * accounts/services/entitlement_service.py's DenialReason class
+         * defines (CODE-VERIFIED against that exact class -- not
+         * invented). The server only ever sends back one of these seven
+         * strings (or none, when allowed); this map is presentation copy
+         * only -- it never decides access itself, it just describes a
+         * decision the server already made.
+         */
+        const ENTITLEMENT_DENIAL_COPY = {
+            FEATURE_DISABLED: {
+                title: "Temporarily unavailable",
+                message: "This generator is temporarily disabled.",
+                showUpgrade: false,
+            },
+            PLAN_NOT_ALLOWED: {
+                title: "Upgrade required",
+                message: "This generator is available on a higher plan.",
+                showUpgrade: true,
+            },
+            ENTITLEMENT_INACTIVE: {
+                title: "Subscription inactive",
+                message: "Your subscription isn't active right now.",
+                showUpgrade: true,
+            },
+            ENTITLEMENT_EXPIRED: {
+                title: "Subscription expired",
+                message: "Your subscription has expired.",
+                showUpgrade: true,
+            },
+            QUOTA_EXCEEDED: {
+                title: "Quota reached",
+                message: "You've used your quota for this generator for now.",
+                showUpgrade: true,
+            },
+            GUEST_RESTRICTION: {
+                title: "Sign in required",
+                message: "Sign in to use this generator.",
+                showUpgrade: false,
+            },
+            AUTHENTICATION_REQUIRED: {
+                title: "Sign in required",
+                message: "Sign in to use this generator.",
+                showUpgrade: false,
+            },
+        };
+
+        /**
+         * /api/entitlements/ identifies features by the internal Feature
+         * code (accounts/entitlement_config.py's FEATURE_DEFINITIONS first
+         * column: "AI_CODE", "AI_STORY", ...), NOT the /api/ai/ request
+         * slug ("code", "story", ...) TAB_ID_TO_GENERATOR_PARAM already
+         * maps tab ids to. Confirmed by actually calling the endpoint
+         * during development, not assumed from the source read alone --
+         * a naive slug-to-slug comparison here would have silently never
+         * matched anything. This map is the exact first column of
+         * FEATURE_DEFINITIONS, keyed by the slug (its second column) for
+         * convenient lookup from TAB_ID_TO_GENERATOR_PARAM's output.
+         */
+        const GENERATOR_SLUG_TO_ENTITLEMENT_FEATURE_CODE = {
+            chat: "AI_CHAT",
+            code: "AI_CODE",
+            story: "AI_STORY",
+            application: "AI_APPLICATION",
+            proposal: "AI_PROPOSAL",
+            photo: "AI_PHOTO",
+        };
+
+        function getActiveTabId() {
+            const active = document.querySelector(".tab-content.active");
+            return active ? active.id.replace(/-tab$/, "") : null;
+        }
+
+        /**
+         * Fetches the caller's REAL entitlement summary and, if the
+         * currently selected generator is genuinely not allowed, shows an
+         * advisory banner using the same renderExhaustionCard() /
+         * window.BillingFlow the reactive credit-exhaustion failure card
+         * already uses (Step 5 -- one billing flow, not a second one).
+         * This never blocks the Generate button itself: /api/ai/ remains
+         * the sole authority, unconditionally re-checked server-side on
+         * every actual submission regardless of what this banner shows
+         * (e.g. a network hiccup fetching /api/entitlements/ just leaves
+         * the banner hidden -- it never fails open OR closed on access).
+         */
+        async function refreshEntitlementBanner() {
+            const bannerEl = document.getElementById("entitlementBanner");
+            if (!bannerEl) return;
+
+            const tabId = getActiveTabId();
+            const slug = tabId ? TAB_ID_TO_GENERATOR_PARAM[tabId] : null;
+            const featureCode = slug ? GENERATOR_SLUG_TO_ENTITLEMENT_FEATURE_CODE[slug] : null;
+            if (!featureCode) {
+                bannerEl.style.display = "none";
+                return;
+            }
+
+            let summary;
+            try {
+                const resp = await fetch("/api/entitlements/", { credentials: "same-origin" });
+                if (!resp.ok) { bannerEl.style.display = "none"; return; }
+                summary = await resp.json();
+            } catch (e) {
+                bannerEl.style.display = "none";
+                return;
+            }
+
+            const featureEntry = (summary.features || []).find((f) => f.feature === featureCode);
+            if (!featureEntry || featureEntry.allowed) {
+                bannerEl.style.display = "none";
+                bannerEl.innerHTML = "";
+                return;
+            }
+
+            const copy = ENTITLEMENT_DENIAL_COPY[featureEntry.reason] || {
+                title: "Not available",
+                message: "This generator isn't available right now.",
+                showUpgrade: false,
+            };
+
+            bannerEl.style.display = "block";
+            if (copy.showUpgrade) {
+                renderExhaustionCard(bannerEl, copy.message, copy.title);
+            } else if (copy.title === "Sign in required") {
+                renderSignInRequired(bannerEl, copy.message);
+            } else {
+                bannerEl.innerHTML = "";
+                var card = document.createElement("div");
+                card.className = "ai-exhaustion-card";
+                var titleEl = document.createElement("div");
+                titleEl.className = "ai-exhaustion-title";
+                titleEl.textContent = copy.title;
+                var msgEl = document.createElement("div");
+                msgEl.className = "ai-exhaustion-message";
+                msgEl.textContent = copy.message;
+                card.appendChild(titleEl);
+                card.appendChild(msgEl);
+                bannerEl.appendChild(card);
+            }
+        }
+        // PHASE 8 STEP 10: an unconditional DOMContentLoaded listener
+        // that used to sit here (calling this same function directly)
+        // was removed -- it caused a duplicate /api/entitlements/
+        // request on every deep-linked page load (see the single
+        // DOMContentLoaded handler above, which now owns the
+        // one-and-only initial call).
+
+        // PHASE 5 STEP 4: `feature` is the same slug already sent to
+        // /api/ai/ for this generation (see accounts.ai_request_config.
+        // ALLOWED_FEATURES) -- stored verbatim on ChatHistory so
+        // history_view() no longer has to guess a display type from
+        // response content. Every call site below now passes it; omitting
+        // it (an old/unrecognized value) makes the saved row "unknown"
+        // server-side, not silently wrong.
+        function saveHistorySafe(query, response, feature, inputs) {
             if (!IS_AUTHENTICATED) return;  // ❌ without login = no history
 
             fetch("/save_history/", {
@@ -1211,7 +2210,13 @@
                 },
                 body: JSON.stringify({
                     query: query,
-                    response: response
+                    response: response,
+                    feature: feature,
+                    // PHASE 8 STEP 2/3: server re-validates every key/length
+                    // against accounts.history_input_schema before storing
+                    // anything -- this is not a trust boundary, just the
+                    // payload.
+                    inputs: inputs || {}
                 })
             }).catch(err => {
                 console.error("History save failed:", err);
@@ -1223,28 +2228,54 @@
 
         // ========== GLOBAL VARIABLES ==========
                     // ========== MAIN FUNCTION ==========
+        // Per-generator idempotency state: holds the request_id for the
+        // CURRENT logical generation. Reused across a manual retry of a
+        // failed attempt; replaced with a fresh id once that attempt
+        // succeeds (or once the user edits the prompt and starts over).
+        const codeGenState = { requestId: null, status: GENERATOR_STATES.IDLE };
+
+        // PHASE 5 STEP 3: module-level (not nested inside generateCode()),
+        // so it's reachable from a plain addEventListener wired right
+        // below -- no inline onclick reaching into another function's
+        // local scope, and no `window.resetCodeGenerator = ...` global
+        // patch either.
+        function resetCodeGenerator() {
+            document.getElementById("codePrompt").value = "";
+            document.getElementById("codeOutput").innerHTML =
+                "<p class='output-placeholder'>✨ AI code output will appear here...</p>";
+            // PHASE 8 STEP 8/9: now shared with every other generator's
+            // reset -- see resetGeneratorWorkspace()'s own comment for why
+            // this specific ordering (requestId cleared, IDLE transition
+            // only if currently valid) matters.
+            resetGeneratorWorkspace(codeGenState);
+        }
+
+        document.getElementById("resetCodeBtn")?.addEventListener("click", resetCodeGenerator);
+
         async function generateCode() {
-                        const lang = document.getElementById("codeLang").value;
-                        const promptText = document.getElementById("codePrompt").value.trim();
-                        const outputDiv = document.getElementById("codeOutput");
+            const lang = document.getElementById("codeLang").value;
+            const promptText = document.getElementById("codePrompt").value.trim();
+            const outputDiv = document.getElementById("codeOutput");
+            const genBtn = document.getElementById("generateBtn") || document.querySelector('#code-tab .generate-btn');
 
-                        if (!promptText) {
-                            alert("Please enter what code you want!");
-                            return;
-                        }
+            const languageTag = {
+                python: "python",
+                javascript: "javascript",
+                html: "html",
+                cpp: "cpp",
+                java: "java",
+                sql: "sql"
+            }[lang];
 
-                        outputDiv.innerHTML = "<div class='loading'>⏳ Generating Code...</div>";
-
-                        const languageTag = {
-                            python: "python",
-                            javascript: "javascript",
-                            html: "html",
-                            cpp: "cpp",
-                            java: "java",
-                            sql: "sql"
-                        }[lang] ;
-
-                        const finalPrompt = `
+            await runGeneratorLifecycle(codeGenState, {
+                outputEl: outputDiv,
+                genBtn: genBtn,
+                feature: "code",
+                statusBadgeId: "codeCostHint",
+                retryFn: () => generateCode(),
+                validate: () => (!promptText ? "Please enter what code you want!" : null),
+                loadingHtml: "<div class='loading'>⏳ Generating Code...</div>",
+                buildPrompt: () => `
                         You are a senior software engineer.
 
                         IMPORTANT:
@@ -1266,130 +2297,66 @@
                         • Use ONLY ${lang.toUpperCase()}
                         • No extra text
                         • Beginner friendly
-                        `;
+                        `,
+                onSuccess: (data) => {
+                    const rawText = data.result;
 
+                    // Extract code block
+                    const codeBlockRegex = /```(?:[a-zA-Z0-9+\-]*)\n([\s\S]*?)```/;
+                    const match = rawText.match(codeBlockRegex);
+                    const codeOnly = match?.[1]?.trim() || rawText;
 
-
-                        try {
-                            const response = await fetch("/api/ai/", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ prompt: finalPrompt })
-                            });
-
-                            if (!response.ok) {
-                                outputDiv.innerHTML = `<span style='color:red;font-weight:bold;'>❌ API Error: ${response.status}</span>`;
-                                return;
-                            }
-
-                            const data = await response.json();
-                            const rawText = data.result;
-
-
-                            // Extract code block
-                            const codeBlockRegex = /```(?:[a-zA-Z0-9+\-]*)\n([\s\S]*?)```/;
-                            const match = rawText.match(codeBlockRegex);
-                            const codeOnly = match?.[1]?.trim() || rawText;
-
-                            // Extract explanation
-                            let explanation = "";
-                            if (match) {
-                                explanation = rawText.replace(match[0], "").trim();
-                            }
-
-                            // Render final output
-                            outputDiv.innerHTML = `
-                                <div class="code-actions" style="display:flex; gap:10px; margin-bottom:12px;">
-                                    <button class="btn-primary" id="copyCodeBtn">📋 Copy Code</button>
-                                    <button class="btn-secondary" id="downloadCodeBtn">⬇️ Download</button>
-                                </div>
-
-                                <pre class="pretty-output" id="generatedCode">${escapeHtml(codeOnly)}</pre>
-
-                                <div class="code-explain">
-                                    ${escapeHtml(explanation).replace(/\n/g, "<br>")}
-                                </div>
-                            `;
-
-                            // Copy code
-                            document.getElementById("copyCodeBtn").onclick = () => {
-                                copyTextToClipboard(codeOnly);
-                                document.getElementById("copyCodeBtn").innerText = "✓ Copied!";
-                                setTimeout(() => {
-                                    document.getElementById("copyCodeBtn").innerText = "📋 Copy Code";
-                                }, 1500);
-                            };
-
-                            // Download code
-                            document.getElementById("downloadCodeBtn").onclick = () => {
-                                const ext = {
-                                    python: "py",
-                                    javascript: "js",
-                                    html: "html",
-                                    cpp: "cpp",
-                                    java: "java",
-                                    sql: "sql"
-                                }[lang] || "txt";
-
-                                const file = new Blob([codeOnly], { type: "text/plain" });
-                                const link = document.createElement("a");
-                                link.href = URL.createObjectURL(file);
-                                link.download = `ai_code_${Date.now()}.${ext}`;
-                                link.click();
-                            };
-
-                            // Save history
-                            saveHistorySafe(
-                                "Code Creation (" + lang + ") - " + promptText,
-                                rawText
-                            );
-
-
-                        } catch (e) {
-                            if (!response.ok) {
-                                outputDiv.innerHTML = `
-                                    <span style="color:#ffb703;font-weight:bold;">
-                                    ⚠️ AI is busy. Please try again in a few seconds.
-                                    </span>`;
-                                return;
-                            }
-
-                        }
-                        
+                    // Extract explanation
+                    let explanation = "";
+                    if (match) {
+                        explanation = rawText.replace(match[0], "").trim();
                     }
 
-                function downloadGeneratedCode() {
-                    const code = document.getElementById("generatedCode")?.innerText;
-                    if (!code) return alert("Generate code first!");
+                    // Render final output
+                    outputDiv.innerHTML = `
+                        <div class="code-actions">
+                            <button class="btn btn-primary" id="copyCodeBtn">📋 Copy Code</button>
+                            <button class="btn btn-secondary" id="downloadCodeBtn">⬇️ Download</button>
+                        </div>
 
-                    const blob = new Blob([code], { type: "text/plain" });
-                    const link = document.createElement("a");
-                    link.href = URL.createObjectURL(blob);
-                    link.download = "ai_code.txt";
-                    link.click();
-                }
+                        <pre class="pretty-output" id="generatedCode">${escapeHtml(codeOnly)}</pre>
 
-                function copyGeneratedCode() {
-                    const code = document.getElementById("generatedCode")?.innerText;
-                    if (!code) return alert("Generate code first!");
-                    navigator.clipboard.writeText(code);
-                }
+                        <div class="code-explain">
+                            ${escapeHtml(explanation).replace(/\n/g, "<br>")}
+                        </div>
+                    `;
 
-                function resetCodeGenerator() {
-                    document.getElementById("codePrompt").value = "";
-                    document.getElementById("codeOutput").innerHTML =
-                        "<p style='color:#ffffff80;text-align:center;'>✨ AI code output will appear here...</p>";
-                }
+                    // Copy code
+                    document.getElementById("copyCodeBtn").onclick = () => {
+                        copyTextToClipboard(codeOnly);
+                        document.getElementById("copyCodeBtn").innerText = "✓ Copied!";
+                        setTimeout(() => {
+                            document.getElementById("copyCodeBtn").innerText = "📋 Copy Code";
+                        }, 1500);
+                    };
 
-                                
+                    // Download code
+                    document.getElementById("downloadCodeBtn").onclick = () => {
+                        const ext = {
+                            python: "py",
+                            javascript: "js",
+                            html: "html",
+                            cpp: "cpp",
+                            java: "java",
+                            sql: "sql"
+                        }[lang] || "txt";
 
-                // ========== HELPERS ==========
-                function escapeHtml(text) {
-                    if (!text) return "";
-                    return text.replace(/&/g, "&amp;")
-                            .replace(/</g, "&lt;")
-                            .replace(/>/g, "&gt;");
-                }
+                        const file = new Blob([codeOnly], { type: "text/plain" });
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(file);
+                        link.download = `ai_code_${Date.now()}.${ext}`;
+                        link.click();
+                    };
+                },
+                historyQuery: () => "Code Creation (" + lang + ") - " + promptText,
+                historyInputs: () => ({ language: lang, prompt: promptText }),
+            });
+        }
 
                 function copyTextToClipboard(text) {
                     navigator.clipboard.writeText(text);
@@ -1404,30 +2371,58 @@
                     });
                 });
 
+        // PHASE 1 — GENERATOR ARCHITECTURE NORMALIZATION: photo now goes
+        // through the same aiRequest()/entitlement/credit path as
+        // Story/Application/Proposal/Code (see AI_GENERATORS/api_views.py
+        // ai_generate()). It no longer calls the image provider directly
+        // from the browser -- see PHASE_0_FORENSIC_AUDIT.md's "Photo
+        // Generator" finding for why that was a real gap. Mirrors
+        // generateStory()'s state/loading/error handling exactly so this
+        // isn't a second, divergent pattern.
+        const photoGenState = { requestId: null, status: GENERATOR_STATES.IDLE };
+
         async function generateImage() {
                 const promptInput = document.getElementById("imagePrompt");
                 const prompt = promptInput.value.trim();
-
-                if (!prompt) {
-                    alert("Please describe the image!");
-                    return;
-                }
-
-                const imageUrl =
-                    `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&model=flux`;
-
-                document.getElementById("generatedPreview").innerHTML =
-                    `<img src="${imageUrl}" class="preview-image">`;
-
+                const previewEl = document.getElementById("generatedPreview");
                 const btn = document.getElementById("generateBtn");
-                btn.innerText = "✅ Generated";
-                btn.disabled = true;
 
-                saveHistorySafe(
-                    "Photo Prompt: " + prompt,
-                    imageUrl
-                );
-
+                await runGeneratorLifecycle(photoGenState, {
+                    outputEl: previewEl,
+                    genBtn: btn,
+                    feature: "photo",
+                    statusBadgeId: "photoCostHint",
+                    retryFn: () => generateImage(),
+                    validate: () => (!prompt ? "Please describe the image!" : null),
+                    skipOutputLoading: true, // Photo never touches generatedPreview while loading -- only the button text changes
+                    genBtnLoadingHtml: `<div class="spinner"></div>Generating...`,
+                    genBtnIdleHtml: "🚀 Generate AI Photo",
+                    buildPrompt: () => prompt,
+                    onSuccess: (data) => {
+                        // `data.result` is a server-verified image URL (the server
+                        // already confirmed the provider would serve it before
+                        // this response was ever sent -- see
+                        // _call_image_provider() in api_views.py). The browser
+                        // fetches the actual image bytes directly from it, same
+                        // as before this phase -- generation still goes through
+                        // /api/ai/ end to end, never a direct provider call.
+                        const imageUrl = data.result;
+                        // PHASE 7 accessibility pass: this <img> had no
+                        // alt text at all -- a real, generated image
+                        // with nothing for a screen reader to announce.
+                        // The user's own prompt describes what the
+                        // image should depict, so it's the most
+                        // accurate alt text available; escaped since
+                        // it's free-form user input landing in an HTML
+                        // attribute.
+                        previewEl.innerHTML = `<img src="${imageUrl}" class="preview-image" alt="${escapeHtml(prompt)}">`;
+                    },
+                    historyQuery: () => "Photo Prompt: " + prompt,
+                    historyInputs: () => ({ prompt: prompt }),
+                    onException: (err) => {
+                        previewEl.innerHTML = `<span style="color:var(--danger-color);font-weight:bold;">⚠️ Something went wrong. Please try again.</span>`;
+                    },
+                });
             }
 
 
@@ -1464,41 +2459,57 @@
 
                 const generateBtn = document.getElementById("generateBtn");
                 generateBtn.innerText = "🚀 Generate AI Photo";
-                generateBtn.disabled = false;
+                // PHASE 8 STEP 8/9: no longer force `.disabled = false` here.
+                // If a generation is still in flight, runGeneratorLifecycle()'s
+                // own `finally` block re-enables this exact button once that
+                // request actually settles -- forcing it open early let a
+                // user click Generate again while genState.status was still
+                // REQUESTING, which the lifecycle's duplicate-click guard
+                // then silently swallowed (a no-op click with zero visible
+                // feedback). resetGeneratorWorkspace() below still clears
+                // requestId/state immediately either way.
+                resetGeneratorWorkspace(photoGenState);
             }
 
 
 
         
-    // Story Generator Functions
-        function selectStoryType(type) {
-            document.querySelectorAll('#story-tab .content-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            event.target.classList.add('selected');
-            currentStoryType = type;
-            document.getElementById('storyTopic').value = type.charAt(0).toUpperCase() + type.slice(1);
-        }
+        // PHASE 7 STEP 7.17 fresh dead-code sweep: selectStoryType() was
+        // fully unreachable -- it targeted '#story-tab .content-option'
+        // elements and a currentStoryType variable, but no such element or
+        // declared variable exists anywhere in the Story tab (confirmed:
+        // no onclick, no addEventListener, and currentStoryType was never
+        // declared with let/var/const, so the assignment inside it would
+        // have silently created an implicit global the one time this
+        // function could ever have run -- which was never, since nothing
+        // called it). Not "working functionality" under RULE 7 since it
+        // was never reachable; removed rather than left as confusing dead
+        // code implying a story-type picker UI that doesn't exist.
+
+        const storyGenState = { requestId: null, status: GENERATOR_STATES.IDLE };
 
         async function generateStory(event) {
             event && event.preventDefault && event.preventDefault();
+
             // 1. User input लो
             const topic = document.getElementById('storyTopic').value.trim();
             const characters = document.getElementById('storyCharacters').value.trim();
             const length = document.getElementById('storyLength').value; // short/medium/long
             const details = document.getElementById('storyDetails').value.trim();
-
-            if (!topic || !characters) {
-                alert("All fields except 'Additional Details' are required!");
-                return;
-            }
+            const outputEl = document.getElementById('storyOutput');
             const btn = event?.target || document.querySelector('.tab-content.active .generate-btn');
-            btn.disabled = true;
-            btn.innerHTML = `<div class="spinner"></div>Generating Story...`;
 
-            // 2. Prompt तैयार करो
-            // ---- THIS IS THE MAIN CHANGE ----
-            let prompt = `
+            await runGeneratorLifecycle(storyGenState, {
+                outputEl: outputEl,
+                genBtn: btn,
+                feature: "story",
+                statusBadgeId: "storyCostHint",
+                retryFn: () => generateStory(),
+                validate: () => (!topic || !characters ? "All fields except 'Additional Details' are required!" : null),
+                skipOutputLoading: true, // Story never touches storyOutput while loading -- only the button text changes
+                genBtnLoadingHtml: `<div class="spinner"></div>Generating Story...`,
+                genBtnIdleHtml: "Generate Story",
+                buildPrompt: () => `
             You are a MASTER children's storyteller.
 
             Write a highly creative, fun, emotional, cinematic-quality story in Hinglish (Hindi + simple English mix). 
@@ -1533,44 +2544,37 @@
             • Title (fun and creative)
             • Full story (flowing paragraphs, not sections)
             • Message/Moral (2 lines)
-            `;
+            `,
+                onSuccess: (data) => {
+                    const storyText = data.result
+                        .replace(/[#*`]/g, "")
+                        .replace(/\n{3,}/g, "\n\n");
 
-
-
-            // 3. AI API call करो
-            try {
-                const response = await fetch("/api/ai/", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ prompt })
-                });
-
-                const data = await response.json();
-                const storyText = data.result
-                    .replace(/[#*`]/g, "")
-                    .replace(/\n{3,}/g, "\n\n");
-
-
-                document.getElementById('storyOutput').innerHTML = `
-                <div class="pretty-output">${storyText}</div>
-                `;
-
-
-                saveHistorySafe(
-                    "Story: " + topic,
-                    storyText
-                );
-
-                btn.disabled = false;
-                btn.innerHTML = "Generate Story";
-                alert("Story successfully generated!");
-            } catch (err) {
-                document.getElementById('storyOutput').innerHTML = `<span style="color:red; font-weight:bold;">Error: ${err.message}</span>`;
-                btn.disabled = false;
-                btn.innerHTML = "Generate Story";
-                alert("Failed to generate story!\n" + err.message);
-            }
-           }
+                    // PHASE 6 STEP 6.10: escapeHtml() here closes a real
+                    // XSS gap -- Code's own result already used escapeHtml()
+                    // (see generateCode() above), but Story/Application/
+                    // Proposal inserted their AI-generated text via
+                    // innerHTML raw. An LLM asked (directly or via a
+                    // crafted prompt) to include markup in its output could
+                    // have had that markup execute in the browser. Fixed to
+                    // match Code's existing correct pattern, not a new one.
+                    // PHASE 7 GOLDEN UI STEP F: normalized to <pre>, matching
+                    // Code/Application/Proposal's own .pretty-output wrapper
+                    // element (all four were functionally identical already,
+                    // since .pretty-output's CSS sets white-space: pre-wrap
+                    // regardless of tag -- this was a semantic/markup
+                    // inconsistency, not a rendering bug, but <pre> is the
+                    // correct element for preformatted text and now all four
+                    // generators agree).
+                    outputEl.innerHTML = `<pre class="pretty-output">${escapeHtml(storyText)}</pre>`;
+                },
+                historyQuery: () => "Story: " + topic,
+                historyInputs: () => ({ topic: topic, characters: characters, length: length, details: details }),
+                onException: (err) => {
+                    outputEl.innerHTML = `<span style="color:var(--danger-color); font-weight:bold;">Error: ${escapeHtml(err.message)}</span>`;
+                },
+            });
+        }
 
 
 
@@ -1599,45 +2603,77 @@
                 }
             }
 
+            // PHASE 7 STEP 7.6/7.7: real Copy action, matching the one
+            // Code already had (copyCodeBtn) -- reuses the same
+            // copyTextToClipboard() helper and the existing DS.toast
+            // infrastructure (static/js/toast.js, loaded on this page
+            // since PHASE 2 but never wired into a real UI action until
+            // now) instead of a blocking alert() for feedback.
+            function copyStory() {
+                const story = document.getElementById('storyOutput').innerText;
+                if (!story || story === 'Your generated story will appear here...') {
+                    if (window.DS && window.DS.toast) {
+                        window.DS.toast.warning('Generate a story first.');
+                    } else {
+                        alert('पहले story generate करें!');
+                    }
+                    return;
+                }
+                copyTextToClipboard(story);
+                if (window.DS && window.DS.toast) {
+                    window.DS.toast.success('Story copied to clipboard.');
+                }
+            }
+
             function resetStory() {
                 document.getElementById('storyTopic').value = '';
                 document.getElementById('storyCharacters').value = '';
                 document.getElementById('storyDetails').value = '';
-                document.getElementById('storyOutput').innerHTML = '<p>Your generated story will appear here...</p>';
+                document.getElementById('storyOutput').innerHTML = '<p class="output-placeholder">Your generated story will appear here...</p>';
                 document.querySelectorAll('#story-tab .content-option').forEach(option => {
                     option.classList.remove('selected');
                 });
+                // PHASE 8 STEP 8/9: see resetGeneratorWorkspace()'s comment --
+                // this is what lets a response from a still-in-flight
+                // request discard itself instead of overwriting the output
+                // placeholder just set above.
+                resetGeneratorWorkspace(storyGenState);
             }
 
         // Application Writer Functions
+        const applicationGenState = { requestId: null, status: GENERATOR_STATES.IDLE };
+
         async function generateApplication(event) {
             event && event.preventDefault && event.preventDefault();
+
             const type = document.getElementById('applicationType').value;              // Job | Leave etc
             const name = document.getElementById('applicantName').value.trim();
             const purpose = document.getElementById('applicationPurpose').value.trim();
             const recipient = document.getElementById('recipientName').value.trim();
             const reason = document.getElementById('applicationReason').value.trim();
             const details = document.getElementById('applicationDetails').value.trim();
-
-            if (!name || !purpose || !recipient || !reason) {
-                alert('कृपया सभी required fields भरें!');
-                return;
-            }
-
+            const outputEl = document.getElementById('applicationOutput');
             const btn = event?.target || document.querySelector('.tab-content.active .generate-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<div class="spinner"></div>Generating Application...';
 
-            // Gemini AI prompt in Hindi/Hinglish
-            let prompt = "";
-
-            if (
-            details.toLowerCase().includes("hindi") ||
-            details.toLowerCase().includes("हिन्दी") ||
-            details.toLowerCase().includes("हिंदी")
-            ) {
-            // Force Hindi/Hinglish format
-            prompt = `
+            await runGeneratorLifecycle(applicationGenState, {
+                outputEl: outputEl,
+                genBtn: btn,
+                feature: "application",
+                statusBadgeId: "applicationCostHint",
+                retryFn: () => generateApplication(),
+                validate: () => (!name || !purpose || !recipient || !reason ? 'कृपया सभी required fields भरें!' : null),
+                skipOutputLoading: true, // Application never touches applicationOutput while loading -- only the button text changes
+                genBtnLoadingHtml: '<div class="spinner"></div>Generating Application...',
+                genBtnIdleHtml: '📝 Generate Application',
+                buildPrompt: () => {
+                    // Gemini AI prompt in Hindi/Hinglish
+                    if (
+                    details.toLowerCase().includes("hindi") ||
+                    details.toLowerCase().includes("हिन्दी") ||
+                    details.toLowerCase().includes("हिंदी")
+                    ) {
+                    // Force Hindi/Hinglish format
+                    return `
             Write a formal application letter in Hindi or Hinglish (whichever matches the 'additional info' user input), using the following format:
 
             सेवा में,
@@ -1672,9 +2708,9 @@
             Today’s date: ${new Date().toLocaleDateString('hi-IN')}
             Fill all sections and write the body in simple and polite Hindi, using the above format, and add respect at end.
             `;
-            } else {
-            // Default: English format
-            prompt = `
+                    }
+                    // Default: English format
+                    return `
             Write a formal application letter in English, using the following format:
 
             To
@@ -1709,38 +2745,23 @@
             Today’s date: ${new Date().toLocaleDateString('en-IN')}
             Ensure the content fits the above format, is respectful and concise, and fill all details from user input.
             `;
-            }
+                },
+                onSuccess: (data) => {
+                    const applicationText = data.result
+                        .replace(/[#*`]/g, "")
+                        .replace(/\n{3,}/g, "\n\n");
 
-            try {
-                const response = await fetch("/api/ai/", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ prompt })
-                });
-
-                const data = await response.json();
-                const applicationText = data.result
-                    .replace(/[#*`]/g, "")
-                    .replace(/\n{3,}/g, "\n\n");
-
-
-                document.getElementById('applicationOutput').innerHTML =
-                    `<pre class="pretty-output">${applicationText}</pre>`;
-
-                saveHistorySafe(
-                    "Application: " + purpose,
-                    applicationText
-                );
-
-                btn.disabled = false;
-                btn.innerHTML = '📝 Generate Application';
-                alert('Application successfully generated! 🎉');
-            } catch (err) {
-                document.getElementById('applicationOutput').innerHTML = `<span style="color:red; font-weight:bold;">Error: ${err.message}</span>`;
-                btn.disabled = false;
-                btn.innerHTML = '📝 Generate Application';
-                alert('Failed to generate application!\n' + err.message);
-            }
+                    // PHASE 6 STEP 6.10: see generateStory()'s onSuccess for
+                    // why escapeHtml() belongs here -- same real XSS gap,
+                    // same fix, matching Code's existing correct pattern.
+                    outputEl.innerHTML = `<pre class="pretty-output">${escapeHtml(applicationText)}</pre>`;
+                },
+                historyQuery: () => "Application: " + purpose,
+                historyInputs: () => ({ type: type, name: name, purpose: purpose, recipient: recipient, reason: reason, details: details }),
+                onException: (err) => {
+                    outputEl.innerHTML = `<span style="color:var(--danger-color); font-weight:bold;">Error: ${escapeHtml(err.message)}</span>`;
+                },
+            });
          }
 
 
@@ -1769,16 +2790,35 @@
                 }
             }
 
+            // PHASE 7 STEP 7.6/7.7: real Copy action -- see copyStory()
+            // for the pattern this mirrors.
+            function copyApplication() {
+                const application = document.getElementById('applicationOutput').innerText;
+                if (!application || application === 'Your generated application will appear here...') {
+                    if (window.DS && window.DS.toast) {
+                        window.DS.toast.warning('Generate an application first.');
+                    } else {
+                        alert('पहले application generate करें!');
+                    }
+                    return;
+                }
+                copyTextToClipboard(application);
+                if (window.DS && window.DS.toast) {
+                    window.DS.toast.success('Application copied to clipboard.');
+                }
+            }
+
             function resetApplication() {
                 document.getElementById('applicantName').value = '';
                 document.getElementById('applicationPurpose').value = '';
                 document.getElementById('recipientName').value = '';
                 document.getElementById('applicationReason').value = '';
                 document.getElementById('applicationDetails').value = '';
-                document.getElementById('applicationOutput').innerHTML = '<p>Your generated application will appear here...</p>';
+                document.getElementById('applicationOutput').innerHTML = '<p class="output-placeholder">Your generated application will appear here...</p>';
                 document.querySelectorAll('#application-tab .content-option').forEach(option => {
                     option.classList.remove('selected');
                 });
+                resetGeneratorWorkspace(applicationGenState);
             }
 
         // Proposal Maker Functions
@@ -1790,8 +2830,11 @@
             currentProposalStyle = style;
         }
 
+        const proposalGenState = { requestId: null, status: GENERATOR_STATES.IDLE };
+
         async function generateProposal(event) {
             event && event.preventDefault && event.preventDefault();
+
             const type = document.getElementById('proposalType').value; // Business Proposal or Academic/Other
             const title = document.getElementById('proposalTitle').value.trim();
             const audience = document.getElementById('proposalAudience').value.trim();
@@ -1799,21 +2842,24 @@
             const keyPoints = document.getElementById('proposalBenefits').value.trim();
             const budget = document.getElementById('proposalBudget').value.trim();
             const details = document.getElementById('proposalDetails').value.trim();
-
-            if (!type || !title || !audience || !objective || !keyPoints) {
-                alert('Please fill all the required fields.');
-                return;
-            }
-
+            const outputEl = document.getElementById('proposalOutput');
             const btn = event?.target || document.querySelector('.tab-content.active .generate-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<div class="spinner"></div>Generating Proposal...';
 
-            // Format prompt based on type (see A above)
-            let formatPrompt = "";
-            if (type.toLowerCase().includes("business") || type.toLowerCase().includes("project")) {
-            // Business/Project Proposal
-            formatPrompt = `
+            await runGeneratorLifecycle(proposalGenState, {
+                outputEl: outputEl,
+                genBtn: btn,
+                feature: "proposal",
+                statusBadgeId: "proposalCostHint",
+                retryFn: () => generateProposal(),
+                validate: () => (!type || !title || !audience || !objective || !keyPoints ? 'Please fill all the required fields.' : null),
+                skipOutputLoading: true, // Proposal never touches proposalOutput while loading -- only the button text changes
+                genBtnLoadingHtml: '<div class="spinner"></div>Generating Proposal...',
+                genBtnIdleHtml: '📄 Generate Proposal',
+                buildPrompt: () => {
+                    // Format prompt based on type
+                    if (type.toLowerCase().includes("business") || type.toLowerCase().includes("project")) {
+                    // Business/Project Proposal
+                    return `
             Write a professional business/project proposal using the following structure:
             1. Cover Page (title, your organization/team)
             2. Executive Summary (short overview of WHAT, WHY, FOR WHOM)
@@ -1835,9 +2881,9 @@
 
             Fill all sections, use clear headings. Keep the language formal and easy to understand.
             `;
-            } else {
-            // Academic/Board/College Proposal (CBSE format)
-            formatPrompt = `
+                    }
+                    // Academic/Board/College Proposal (CBSE format)
+                    return `
             Write an official proposal as per academic/board/college format using these sections:
             1. Title of Proposal (centered)
             2. Objective / Purpose (why it’s needed)
@@ -1856,39 +2902,23 @@
             Use clear headings and bullet points where helpful.
             Respond using only the above format.
             `;
-            }
+                },
+                onSuccess: (data) => {
+                    const proposalText = data.result
+                        .replace(/[#*`]/g, "")
+                        .replace(/\n{3,}/g, "\n\n");
 
-
-            try {
-                const response = await fetch("/api/ai/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt: formatPrompt })
+                    // PHASE 6 STEP 6.10: see generateStory()'s onSuccess for
+                    // why escapeHtml() belongs here -- same real XSS gap,
+                    // same fix, matching Code's existing correct pattern.
+                    outputEl.innerHTML = `<pre class="pretty-output">${escapeHtml(proposalText)}</pre>`;
+                },
+                historyQuery: () => "Proposal: " + title,
+                historyInputs: () => ({ type: type, title: title, audience: audience, objective: objective, benefits: keyPoints, budget: budget, details: details }),
+                onException: (err) => {
+                    outputEl.innerHTML = `<span style="color:var(--danger-color); font-weight:bold;">Error: ${escapeHtml(err.message)}</span>`;
+                },
             });
-
-            const data = await response.json();
-            const proposalText = data.result
-                .replace(/[#*`]/g, "")
-                .replace(/\n{3,}/g, "\n\n");
-
-
-            document.getElementById('proposalOutput').innerHTML =
-                `<pre class="pretty-output">${proposalText}</pre>`;
-
-            saveHistorySafe(
-                "Proposal: " + title,
-                proposalText
-            );
-
-                btn.disabled = false;
-                btn.innerHTML = '📄 Generate Proposal';
-                alert('Proposal generated successfully!');
-            } catch (err) {
-                document.getElementById('proposalOutput').innerHTML = `<span style="color:red; font-weight:bold;">Error: ${err.message}</span>`;
-                btn.disabled = false;
-                btn.innerHTML = '📄 Generate Proposal';
-                alert('Failed to generate proposal!\n' + err.message);
-            }
          }
 
 
@@ -1917,6 +2947,24 @@
                 }
             }
 
+            // PHASE 7 STEP 7.6/7.7: real Copy action -- see copyStory()
+            // for the pattern this mirrors.
+            function copyProposal() {
+                const proposal = document.getElementById('proposalOutput').innerText;
+                if (!proposal || proposal === 'Your generated proposal will appear here...') {
+                    if (window.DS && window.DS.toast) {
+                        window.DS.toast.warning('Generate a proposal first.');
+                    } else {
+                        alert('पहले proposal generate करें!');
+                    }
+                    return;
+                }
+                copyTextToClipboard(proposal);
+                if (window.DS && window.DS.toast) {
+                    window.DS.toast.success('Proposal copied to clipboard.');
+                }
+            }
+
             function resetProposal() {
                 document.getElementById('proposalTitle').value = '';
                 document.getElementById('proposalAudience').value = '';
@@ -1924,10 +2972,11 @@
                 document.getElementById('proposalBenefits').value = '';
                 document.getElementById('proposalBudget').value = '';
                 document.getElementById('proposalDetails').value = '';
-                document.getElementById('proposalOutput').innerHTML = '<p>Your generated proposal will appear here...</p>';
+                document.getElementById('proposalOutput').innerHTML = '<p class="output-placeholder">Your generated proposal will appear here...</p>';
                 document.querySelectorAll('#proposal-tab .content-option').forEach(option => {
                     option.classList.remove('selected');
                 });
+                resetGeneratorWorkspace(proposalGenState);
             }
 
 
@@ -1949,11 +2998,7 @@
             });
         }
     </script>
-</body>
-</html>
-
-
-
+{% endblock %}
 
 
 

@@ -15,7 +15,7 @@ urlpatterns = [
     # 🔥 PROFILE ROUTES (Aapke Backend Functions Ke According)
 
     # 🔥 SINGLE AI ENDPOINT
-    path("api/ai/", api_views.gemini_api),
+    path("api/ai/", api_views.ai_generate),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

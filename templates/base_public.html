@@ -1,0 +1,36 @@
+{% load static %}
+{% comment %} templates/base_public.html
+   PHASE 2 STEP 1 — FOUNDATION — Public shell base template.
+
+   PHASE 3 migrated login.html, signup.html, forget.html and
+   verify_otp.html onto this shell (the paragraph below describing them
+   as "self-contained... not yet migrated" predates that and was stale
+   -- corrected here rather than left contradicting the actual
+   templates, all 4 of which `{% extends "base_public.html" %}`,
+   verified directly). See `PHASE_3B_AUTH_ARCHITECTURE.md` for that
+   migration's own account.
+
+   Child templates: extend this file and override the `title` and
+   `content` blocks.
+{% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}AI Generators{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
+  <link rel="icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}">
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+  <link rel="stylesheet" href="{% static 'css/shell.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="ds-shell-body">
+  {% include "partials/nav_public.html" %}
+  <main class="ds-public-main">
+    {% block content %}{% endblock %}
+  </main>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

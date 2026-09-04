@@ -1,166 +1,197 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>AI Generator History</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "base_app.html" %}
+{% comment %} PHASE 7 GOLDEN UI: migrated onto the shared app shell
+   (base_app.html -> nav_app.html) instead of a standalone document with
+   its own purple-gradient theme (#667eea/#764ba2) -- a THIRD, unrelated
+   visual language on top of the workspace's old dark-glass theme and
+   the light tokens.css theme login/signup/profile already used. This
+   page's own header (page title + a Home link only, no
+   Generators/Pricing links, no credit pill) is also gone -- nav_app.html
+   already provides the real shared nav. Colors below are re-themed onto
+   the shared design tokens; every id/class the JS below depends on
+   (searchInput, statText/statImage/statCode, .history-item,
+   .filter-btn, .item-content, etc.) is unchanged, so none of that JS
+   needed to change.
+{% endcomment %}
+{% block title %}AI Generator History{% endblock %}
 
+{% block extra_head %}
 <style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{
-        font-family:Segoe UI,Arial,sans-serif;
-        background:linear-gradient(135deg,#667eea,#764ba2);
-        min-height:100vh;
-        padding:10px;
-    }
-    .container{
-        max-width:1100px;
-        margin:auto;
-        background:#fff;
-        border-radius:16px;
+    .history-shell{
+        background:var(--bg-card);
+        border-radius:var(--radius-lg);
         overflow:hidden;
-        box-shadow:0 20px 60px rgba(0,0,0,.3);
+        box-shadow:var(--shadow-md);
+        border:1px solid var(--border-color);
     }
-    .header{
-        background:linear-gradient(135deg,#667eea,#764ba2);
-        color:#fff;
-        padding:30px;
+    .history-page-header{
+        padding:var(--space-6);
+        border-bottom:1px solid var(--border-color);
     }
-    .header h1{font-size:28px;}
+    .history-page-header h1{font-size:var(--text-2xl); color:var(--text-primary);}
+    .history-page-header p{color:var(--text-secondary); margin-top:4px;}
     .controls{
         display:flex;
-        gap:12px;
+        gap:var(--space-3);
         flex-wrap:wrap;
-        padding:15px 25px;
-        background:#f8f9fa;
-        border-bottom:1px solid #ddd;
+        padding:var(--space-4) var(--space-6);
+        background:var(--bg-main);
+        border-bottom:1px solid var(--border-color);
         align-items:center;
     }
     .search-box{flex:1;min-width:220px;position:relative;}
     .search-box input{
         width:100%;
-        padding:10px 15px;
-        border:2px solid #ddd;
-        border-radius:8px;
+        padding:10px 14px;
+        border:1px solid var(--input-border);
+        border-radius:var(--radius-sm);
+        background:var(--input-bg);
+        color:var(--text-primary);
+        font-size:var(--text-md);
+    }
+    .search-box input:focus{
+        outline:none;
+        border-color:var(--input-focus);
+        box-shadow:0 0 0 3px rgba(255, 122, 61, 0.15);
     }
     .filter-btn,.action-btn{
         padding:10px 15px;
-        border-radius:8px;
-        border:2px solid #ddd;
-        background:#fff;
+        border-radius:var(--radius-sm);
+        border:1px solid var(--border-color);
+        background:var(--bg-card);
+        color:var(--text-primary);
         cursor:pointer;
-    }
-    .filter-btn.active{
-        background:#667eea;
-        color:#fff;
-        border-color:#667eea;
-    }
-    .action-btn{
-        background:#dc3545;
-        color:#fff;
-        border-color:#dc3545;
-    }
-    .action-btn.home {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px; /* Icon aur text ke beech ka gap */
-        padding: 10px 20px;
-        background: linear-gradient(135deg, #198754 0%, #146c43 100%);
-        color: white;
-        text-decoration: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-family: 'Segoe UI', sans-serif;
-        transition: all 0.3s ease;
-        border: none;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Hover Effect: Jab mouse button par jaye */
-    .action-btn.home:hover {
-        background: linear-gradient(135deg, #157347 0%, #0d5132 100%);
-        transform: translateY(-2px); /* Button thoda upar uthega */
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    /* Active Effect: Jab button click ho */
-    .action-btn.home:active {
-        transform: translateY(0);
-    }
-    .stats{
-        display:flex;
-        gap:15px;
-        padding:15px 25px;
-        background:#eef1ff;
+        font-size:var(--text-sm);
         font-weight:600;
     }
-    .history-list{padding:25px;}
-    .history-item{
-        border:2px solid #e0e0e0;
-        border-radius:12px;
-        padding:18px;
-        margin-bottom:15px;
+    .filter-btn.active{
+        background:var(--primary-color);
+        color:#fff;
+        border-color:var(--primary-color);
     }
-    .history-item:hover{border-color:#667eea;}
+    .action-btn{
+        background:var(--danger-color);
+        color:#fff;
+        border-color:var(--danger-color);
+    }
+    .action-btn.home{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        background:var(--primary-color);
+        color:#fff;
+        text-decoration:none;
+        border-radius:var(--radius-sm);
+        padding:10px 20px;
+        font-weight:600;
+        border:none;
+    }
+    .action-btn.home:hover{background:var(--primary-hover);}
+    .stats{
+        display:flex;
+        gap:var(--space-4);
+        padding:var(--space-4) var(--space-6);
+        background:var(--bg-main);
+        font-weight:600;
+        color:var(--text-primary);
+        border-bottom:1px solid var(--border-color);
+    }
+    .history-list{padding:var(--space-6);}
+    .history-item{
+        border:1px solid var(--border-color);
+        border-radius:var(--radius-md);
+        padding:var(--space-4);
+        margin-bottom:var(--space-4);
+        background:var(--bg-card);
+    }
+    .history-item:hover{border-color:var(--primary-color);}
     .item-header{
         display:flex;
+        align-items:center;
         justify-content:space-between;
-        margin-bottom:10px;
+        margin-bottom:var(--space-2);
+        color:var(--text-secondary);
+        font-size:var(--text-sm);
     }
     .type-icon{
-        width:40px;height:40px;
-        border-radius:10px;
+        width:36px;height:36px;
+        border-radius:var(--radius-sm);
         display:flex;
         align-items:center;
         justify-content:center;
-        font-size:20px;
+        font-size:18px;
     }
-    .type-icon.text{background:#f3e5f5;}
-    .type-icon.image{background:#e3f2fd;}
-    .type-icon.code{background:#e8f5e9;}
+    .type-icon.text{background:var(--info-bg);}
+    .type-icon.image{background:var(--success-bg);}
+    .type-icon.code{background:var(--warning-bg);}
+    .legacy-type-badge{
+        font-size:11px;
+        opacity:0.75;
+        border:1px solid currentColor;
+        border-radius:var(--radius-pill);
+        padding:2px 8px;
+        margin-left:8px;
+        cursor:help;
+        color:var(--text-tertiary);
+    }
+    .feature-badge{
+        font-size:11px;
+        font-weight:700;
+        text-transform:uppercase;
+        letter-spacing:0.03em;
+        background:var(--info-bg);
+        color:var(--info-color);
+        border-radius:var(--radius-pill);
+        padding:2px 10px;
+        margin-left:8px;
+    }
+    .history-item h3{color:var(--text-primary); margin:4px 0 var(--space-2);}
     .item-content{
-        background:#f8f9fa;
-        padding:12px;
-        border-radius:8px;
-        margin-bottom:12px;
+        background:var(--bg-main);
+        color:var(--text-primary);
+        padding:var(--space-3);
+        border-radius:var(--radius-sm);
+        margin-bottom:var(--space-3);
         white-space:pre-wrap;
     }
     .item-content img{
         max-width:100%;
-        border-radius:8px;
+        border-radius:var(--radius-sm);
     }
     .item-actions{
         display:flex;
-        gap:10px;
+        gap:var(--space-2);
         flex-wrap:wrap;
     }
     .item-btn{
         padding:8px 14px;
-        border-radius:6px;
-        border:1px solid #ccc;
+        border-radius:var(--radius-sm);
+        border:1px solid var(--border-color);
         cursor:pointer;
-        background:#fff;
+        background:var(--bg-card);
+        color:var(--text-primary);
+        font-size:var(--text-sm);
     }
-    .item-btn:hover{background:#667eea;color:#fff;border-color:#667eea;}
+    .item-btn:hover{background:var(--primary-color);color:#fff;border-color:var(--primary-color);}
     .pagination{
         display:flex;
         justify-content:center;
-        gap:10px;
-        padding:15px;
+        gap:var(--space-3);
+        padding:var(--space-4);
     }
 </style>
-</head>
+{% endblock %}
 
-<body>
-<div class="container">
+{% block content %}
+<div class="history-shell">
 
-<div class="header">
-    <h1>🤖 AI Generator History</h1>
+<div class="history-page-header">
+    <h1>AI Generator History</h1>
     <p>Hello {{ request.user.first_name|default:request.user.username }}</p>
 </div>
 
 <div class="controls">
     <div class="search-box">
+        <label for="searchInput" class="sr-only">Search history</label>
         <input id="searchInput" placeholder="Search history...">
     </div>
 
@@ -169,18 +200,18 @@
     <button class="filter-btn" data-filter="image">Image</button>
     <button class="filter-btn" data-filter="code">Code</button>
 
-    <a href="/" class="action-btn home">🏠 Home</a>
+    <a href="{% url 'home' %}" class="action-btn home">Home</a>
 
-    <form method="POST" action="{% url 'clear_history' %}">
+    <form method="POST" action="{% url 'clear_history' %}" onsubmit="return confirm('Delete your entire generation history? This cannot be undone.');">
         {% csrf_token %}
         <button class="action-btn">Clear All</button>
     </form>
 </div>
 
 <div class="stats">
-    📝 Text: <span id="statText">0</span>
-    🖼 Image: <span id="statImage">0</span>
-    💻 Code: <span id="statCode">0</span>
+    Text: <span id="statText">0</span>
+    Image: <span id="statImage">0</span>
+    Code: <span id="statCode">0</span>
 </div>
 
 <div class="history-list" id="historyList">
@@ -194,33 +225,49 @@
             {% if item.type == "code" %}💻{% endif %}
         </div>
         <span>{{ item.created_at|date:"d M Y, h:i A" }}</span>
+        {% if item.feature_label %}
+        <span class="feature-badge">{{ item.feature_label }}</span>
+        {% endif %}
+        {% if item.is_legacy_classification %}
+        <span class="legacy-type-badge" title="Saved before per-generator tracking existed — type is a best-effort guess from the content, not stored fact.">estimated type</span>
+        {% endif %}
     </div>
 
     <h3>{{ item.query }}</h3>
 
     <div class="item-content">
         {% if item.type == "image" %}
-            <img src="{{ item.response }}">
+            <img src="{{ item.response }}" alt="{{ item.query }}">
         {% else %}
             {{ item.response }}
         {% endif %}
     </div>
 
     <div class="item-actions">
+        {% if item.is_reopenable %}
+        <a class="item-btn" href="{% url 'home' %}?generator={{ item.feature }}&reopen={{ item.id }}"
+           {% if item.inputs %}title="Reopens with all your original fields filled back in."{% else %}title="Saved before full-form saving existed — only the summary text below will be restored, not every field."{% endif %}
+           >↩️ Reopen in {{ item.feature_label }}{% if not item.inputs %} (partial){% endif %}</a>
+        {% else %}
+        <span class="item-btn" style="opacity:0.5;cursor:default;" title="This entry was saved before per-generator tracking existed, so we don't reliably know which generator to reopen it in.">↩️ Can't reopen (legacy entry)</span>
+        {% endif %}
         <button class="item-btn" onclick="downloadItem(this)">📥 Download</button>
         {% if item.type != "image" %}
         <button class="item-btn" onclick="copyItem(this)">📋 Copy</button>
         {% endif %}
-        <button class="item-btn" onclick="toggleFav(this)">⭐ Favorite</button>
 
-        <form method="POST" action="{% url 'delete_history' item.id %}">
+        <form method="POST" action="{% url 'delete_history' item.id %}" onsubmit="return confirm('Delete this entry? This cannot be undone.');">
             {% csrf_token %}
             <button class="item-btn">🗑 Delete</button>
         </form>
     </div>
 </div>
 {% empty %}
-<p>No history found.</p>
+<div style="padding:40px 20px; text-align:center; color:var(--text-secondary);">
+    <p style="font-size:18px; font-weight:600; margin-bottom:8px; color:var(--text-primary);">No generations yet</p>
+    <p style="margin-bottom:20px;">Nothing you generate is saved here until you create something first.</p>
+    <a class="action-btn home" href="{% url 'home' %}">✨ Go generate something</a>
+</div>
 {% endfor %}
 
 </div>
@@ -233,6 +280,12 @@
 </div>
 
 <script>
+// PHASE 6 STEP 6.6: the old toggleFav() "Favorite" button was removed --
+// it only toggled a CSS class and button text client-side with no
+// backend field to persist it, so a page refresh silently lost the
+// "favorite" state. That's exactly the "decorative control that doesn't
+// actually work" this step calls out for removal, not a real feature
+// worth keeping around half-built.
 let page=1,perPage=5;
 
 function renderPage(){
@@ -286,11 +339,6 @@ function downloadItem(btn){
     }
 }
 
-function toggleFav(btn){
-    btn.classList.toggle("fav");
-    btn.innerText=btn.classList.contains("fav")?"⭐ Favorited":"⭐ Favorite";
-}
-
 function updateStats(){
     let t=0,i=0,c=0;
     document.querySelectorAll(".history-item").forEach(it=>{
@@ -304,6 +352,4 @@ function updateStats(){
 }
 updateStats();
 </script>
-
-</body>
-</html>
+{% endblock %}

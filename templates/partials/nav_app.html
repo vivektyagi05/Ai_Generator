@@ -1,0 +1,97 @@
+{% load static %}
+{% comment %} templates/partials/nav_app.html
+   PHASE 2 STEP 1 — FOUNDATION — Authenticated app-shell nav.
+
+   Not included by any existing page yet (main.html, profile.html, etc.
+   each keep their own current header markup). This is the shared
+   component Phase 3 pages adopt one at a time -- see
+   PHASE_2_FRONTEND_ARCHITECTURE.md "Step 5" and
+   PHASE_2_STEP_1_COMPLETION_AUDIT.md.
+
+   Expects: `active_nav` context var (one of "home", "history", "plans",
+   "profile") for aria-current highlighting. Falls back gracefully if
+   unset -- no link is marked current. PHASE 6 STEP 7: the Generators
+   dropdown now deep-links via `?generator=<slug>` -- see
+   AI_GENERATORS/views.py:create()'s _DEEP_LINK_FEATURE_TO_TAB_ID for the
+   whitelist these five slugs are validated against server-side.
+
+   PHASE 6 STEP 6.8A: this file previously hardcoded Logout/Profile links
+   unconditionally, with no guest branch at all -- fine while nothing
+   used it, but /home/ (the AI generator workspace) is guest-accessible
+   (guests can generate, just not save history -- see
+   accounts/ai_request_config.py's guest support and
+   accounts/views.py:save_history's @login_required, which is the ONE
+   guest restriction, not a whole-page one). Adopting this nav for
+   main.html without a guest branch would have silently shown a Logout
+   link to a user who was never logged in. Fixed here before any page
+   adopts this template, not discovered after.
+
+   Also fixed here: this header comment itself, and base_app.html's, used
+   to be a multi-line short-comment tag, which Django does not support
+   (single-line only -- see base_app.html for the empirically-confirmed
+   detail). That meant this entire comment, INCLUDING the literal word
+   "Logout" above, was rendering as visible text in the page for anyone
+   who viewed source -- never functionally broken (it rendered above the
+   real <nav>, not inside it), but a real, previously-undiscovered defect
+   that only surfaced now because this is the first time this template
+   has ever actually been rendered by a real page.
+{% endcomment %}
+<nav class="ds-nav">
+  <a class="ds-nav-brand" href="{% url 'home' %}">AI Generators</a>
+
+  <ul class="ds-nav-links">
+    <li class="ds-nav-dropdown">
+      <a href="{% url 'home' %}" {% if active_nav == 'home' %}aria-current="page"{% endif %}>Generators</a>
+      <div class="ds-nav-dropdown-menu">
+        <a href="{% url 'home' %}?generator=photo">Photo</a>
+        <a href="{% url 'home' %}?generator=story">Story</a>
+        <a href="{% url 'home' %}?generator=application">Application</a>
+        <a href="{% url 'home' %}?generator=proposal">Proposal</a>
+        <a href="{% url 'home' %}?generator=code">Code</a>
+      </div>
+    </li>
+    {% if user.is_authenticated %}
+    <li><a href="{% url 'dashboard' %}" {% if active_nav == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a></li>
+    <li><a href="{% url 'history' %}" {% if active_nav == 'history' %}aria-current="page"{% endif %}>History</a></li>
+    {% endif %}
+    <li><a href="{% url 'plans_page' %}" {% if active_nav == 'plans' %}aria-current="page"{% endif %}>Pricing</a></li>
+  </ul>
+
+  <div class="ds-nav-actions">
+    <span class="ds-credit-pill" data-ds-credit-pill></span>
+    {% if user.is_authenticated %}
+    <a href="{% url 'profile' %}" class="ds-btn ds-btn-secondary" {% if active_nav == 'profile' %}aria-current="page"{% endif %}>Profile</a>
+    <form method="post" action="{% url 'logout' %}" class="ds-nav-logout-form">{% csrf_token %}<button type="submit" class="ds-btn ds-btn-ghost">Logout</button></form>
+    {% else %}
+    <a href="{% url 'login' %}" class="ds-btn ds-btn-secondary">Login</a>
+    <a href="{% url 'signup' %}" class="ds-btn ds-btn-primary">Sign Up</a>
+    {% endif %}
+    <button type="button" class="ds-nav-toggle" data-ds-nav-toggle aria-expanded="false" aria-label="Open menu">&#9776;</button>
+  </div>
+</nav>
+
+<div class="ds-nav-mobile-panel" data-ds-nav-panel>
+  <a href="{% url 'home' %}">Generators</a>
+  {% if user.is_authenticated %}
+  <a href="{% url 'dashboard' %}">Dashboard</a>
+  <a href="{% url 'history' %}">History</a>
+  {% endif %}
+  <a href="{% url 'plans_page' %}">Pricing</a>
+  {% if user.is_authenticated %}
+  <a href="{% url 'profile' %}">Profile</a>
+  <form method="post" action="{% url 'logout' %}" class="ds-nav-logout-form">{% csrf_token %}<button type="submit">Logout</button></form>
+  {% else %}
+  <a href="{% url 'login' %}">Login</a>
+  <a href="{% url 'signup' %}">Sign Up</a>
+  {% endif %}
+</div>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/toast.js' %}"></script>
+<script src="{% static 'js/credits.js' %}"></script>
+<script src="{% static 'js/nav.js' %}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (window.DS && window.DS.credits) { window.DS.credits.mount(); }
+  });
+</script>

@@ -1,9 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile - AI_Generator</title>
+{% extends "base_app.html" %}
+{% load static %}
+{% comment %} PHASE 7 GOLDEN UI: migrated onto the shared app shell
+   (base_app.html -> nav_app.html) instead of being a standalone HTML
+   document with its own duplicate header (site title + Home link +
+   Logout button, no History/Pricing/Generators links, no credit
+   pill). nav_app.html already provides all of that for every
+   authenticated page. This page's own :root token block is also
+   removed -- it was a byte-for-byte duplicate of static/css/tokens.css
+   (see that file's own header comment, which named this page as one
+   of the sources), so nothing here changes visually -- one real
+   source of truth for the palette instead of two.
+{% endcomment %}
+{% block title %}User Profile - AI_Generator{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/billing.css' %}">
     <style>
         * {
             margin: 0;
@@ -11,24 +22,7 @@
             box-sizing: border-box;
         }
 
-        :root {
-            --bg-main: #f7f7f8;
-            --bg-card: #ffffff;
-            --text-primary: #202123;
-            --text-secondary: #6e6e80;
-            --border-color: #e5e5e8;
-            --primary-color: #10a37f;
-            --primary-hover: #0d8b6a;
-            --input-bg: #ffffff;
-            --input-border: #d1d5db;
-            --input-focus: #10a37f;
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-            --danger-color: #ef4444;
-            --danger-hover: #dc2626;
-        }
-
-        body {
+                body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             background: var(--bg-main);
             color: var(--text-primary);
@@ -55,7 +49,7 @@
             position: absolute;
             width: 4px;
             height: 4px;
-            background: linear-gradient(135deg, rgba(16, 163, 127, 0.3), rgba(16, 163, 127, 0.1));
+            background: linear-gradient(135deg, rgba(255, 122, 61, 0.3), rgba(255, 122, 61, 0.1));
             border-radius: 50%;
             animation: float 15s infinite ease-in-out;
         }
@@ -96,47 +90,12 @@
             }
         }
 
-        .header {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 24px 32px;
-            margin-bottom: 24px;
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .site-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .logout-btn {
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            background: transparent;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .logout-btn:hover {
-            background: var(--bg-main);
-            color: var(--text-primary);
-            border-color: var(--input-border);
-        }
+        /* PHASE 7 GOLDEN UI: .header/.header-left/.site-title/.logout-btn
+           removed -- this page's own standalone header (site title + Home
+           link + Logout button only, no History/Pricing/Generators links,
+           no credit pill) is gone now that this page extends base_app.html
+           and nav_app.html provides the real shared nav, same as main.html,
+           login, signup, forget and verify_otp already do. */
 
         .profile-header {
             background: var(--bg-card);
@@ -221,7 +180,7 @@
             align-items: center;
             gap: 6px;
             padding: 6px 16px;
-            background: rgba(16, 163, 127, 0.1);
+            background: rgba(255, 122, 61, 0.1);
             color: var(--primary-color);
             border-radius: 20px;
             font-size: 13px;
@@ -329,7 +288,7 @@
         textarea:focus,
         select:focus {
             border-color: var(--input-focus);
-            box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+            box-shadow: 0 0 0 3px rgba(255, 122, 61, 0.1);
         }
 
         input:disabled,
@@ -412,7 +371,7 @@
         .btn-primary:hover {
             background: var(--primary-hover);
             transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(16, 163, 127, 0.2);
+            box-shadow: 0 4px 8px rgba(255, 122, 61, 0.2);
         }
 
         .btn-primary:active {
@@ -526,7 +485,7 @@
             width: 40px;
             height: 40px;
             border-radius: 8px;
-            background: rgba(16, 163, 127, 0.1);
+            background: rgba(255, 122, 61, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -579,7 +538,7 @@
         }
 
         input.success {
-            border-color: #10a37f;
+            border-color: var(--success-color);
         }
 
         @keyframes shake {
@@ -611,7 +570,7 @@
         }
 
         .notification.success {
-            border-left-color: #10a37f;
+            border-left-color: var(--success-color);
         }
 
         .notification.error {
@@ -691,12 +650,6 @@
                 grid-template-columns: 1fr;
             }
 
-            .header {
-                flex-direction: column;
-                gap: 16px;
-                text-align: center;
-            }
-
             .stats-grid {
                 grid-template-columns: 1fr;
             }
@@ -715,33 +668,10 @@
                 max-width: none;
             }
         }
-        .action-btn.home {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px; /* Icon aur text ke beech ka gap */
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #198754 0%, #146c43 100%);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-family: 'Segoe UI', sans-serif;
-            transition: all 0.3s ease;
-            border: none;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Hover Effect: Jab mouse button par jaye */
-        .action-btn.home:hover {
-            background: linear-gradient(135deg, #157347 0%, #0d5132 100%);
-            transform: translateY(-2px); /* Button thoda upar uthega */
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Active Effect: Jab button click ho */
-        .action-btn.home:active {
-            transform: translateY(0);
-        }
+        /* PHASE 7 GOLDEN UI: .action-btn.home removed -- it styled the
+           standalone header's own "Home" link, which no longer exists now
+           that nav_app.html's Generators link covers the same
+           destination. */
 
         /* Accessibility */
         .btn-primary:focus-visible,
@@ -754,21 +684,14 @@
             outline-offset: 2px;
         }
     </style>
-</head>
-<body>
+    </style>
+{% endblock %}
+
+{% block content %}
     <div class="particles" id="particles"></div>
-    
+
     <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-left">
-                <div class="site-title">🔥 AI_Generator</div>
-            </div>
-            <a href="/" class="action-btn home">🏠 Home</a>
-            <button class="logout-btn" id="logoutBtn">
-                <span>🚪</span> Logout
-            </button>
-        </div>
+        <meta name="csrf-token" content="{{ csrf_token }}">
 
         <!-- Profile Header -->
         <div class="profile-header">
@@ -788,9 +711,6 @@
                 <span>Active Account</span>
             </div>
         </div>
-
-        <meta name="csrf-token" content="{{ csrf_token }}">
-
 
         <!-- Profile Content -->
         <div class="profile-content">
@@ -850,6 +770,87 @@
                 </div>
                 <div class="button-group">
                     <button class="btn-secondary" id="changePasswordBtn">Change Password</button>
+                </div>
+            </div>
+
+            <!-- Billing & Usage (PHASE 4B) -->
+            <div class="card full-width" id="billingCard">
+                <div class="card-header">
+                    <h2 class="card-title">Billing &amp; Usage</h2>
+                </div>
+
+                <div id="billingPlanBlock">
+                    <div id="premiumPill" class="premium-pill" style="display:none;">⭐ PREMIUM</div>
+                    <div class="info-item">
+                        <span class="info-label">Plan</span>
+                        <span class="info-value" id="billingPlanName">-</span>
+                    </div>
+                    <div class="info-item" id="billingStatusRow" style="display:none;">
+                        <span class="info-label">Status</span>
+                        <span class="info-value" id="billingSubStatus">-</span>
+                    </div>
+                    <div class="info-item" id="billingPeriodRow" style="display:none;">
+                        <span class="info-label">Current period</span>
+                        <span class="info-value" id="billingPeriod">-</span>
+                    </div>
+                    <div class="info-item" id="billingRenewRow" style="display:none;">
+                        <span class="info-label" id="billingRenewLabel">Renews</span>
+                        <span class="info-value" id="billingRenewDate">-</span>
+                    </div>
+                </div>
+
+                <!-- PHASE 8B Rule 5: only shown when the user has no live
+                     subscription but did have one before -- distinguishes a
+                     refund from ordinary expiry (see accounts.views.
+                     profile_data's lapsed_subscription key). Hidden by
+                     default; ProfileBilling.render() reveals it. -->
+                <div class="billing-status-banner state-info" id="billingLapsedNotice" role="status">
+                    <span id="billingLapsedNoticeText"></span>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <div class="info-item" style="border:none; padding-bottom:4px;">
+                        <span class="info-label">AI Credits</span>
+                        <span class="info-value" id="billingCreditsFraction">-</span>
+                    </div>
+                    <div class="billing-usage-bar" id="billingUsageBar"><span id="billingUsageFill" style="width:0%"></span></div>
+                    <div class="billing-usage-numbers">
+                        <span id="billingUsagePct">0% used</span>
+                        <span id="billingUsageTotal">of 0 total</span>
+                    </div>
+                </div>
+
+                <div class="billing-status-banner" id="billingActionBanner">
+                    <span class="spinner"></span>
+                    <span id="billingActionBannerText"></span>
+                    <button type="button" class="retry-btn" id="billingActionRetryBtn" style="display:none;">Try Again</button>
+                </div>
+
+                <div class="button-group" style="margin-top: 16px;">
+                    <button class="btn-primary" id="billingUpgradeBtn" style="display:none;">Upgrade securely</button>
+                    <button class="btn-secondary" id="billingManageBtn" style="display:none;">Cancel at Period End</button>
+                    <button class="btn-secondary" id="billingRestoreBtn" style="display:none;">Keep Premium</button>
+                </div>
+            </div>
+
+            <!-- Feature Access & Usage -->
+            <!-- PHASE 8 STEP 4 -- Credit & Usage Center.
+                 entitlement.features (accounts.services.entitlement_service.
+                 get_entitlement_summary()) has been computed and returned by
+                 /profile/data/ since Phase 2, but nothing ever rendered it --
+                 confirmed by grepping every template/JS file for
+                 "entitlement.features" before adding this: zero matches.
+                 Real per-generator allowed/denied status + daily/monthly
+                 quota already exists server-side; this card is the missing
+                 frontend for it, not a new computation. -->
+            <div class="card full-width">
+                <div class="card-header">
+                    <h2 class="card-title">Feature Access &amp; Usage</h2>
+                </div>
+                <div id="featureAccessList" aria-live="polite">
+                    <div style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                        Loading...
+                    </div>
                 </div>
             </div>
 
@@ -977,6 +978,8 @@
         </div>
     </div>
 
+<script src="{% static 'js/billing.js' %}"></script>
+<script src="{% static 'js/profile-billing.js' %}"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -999,7 +1002,8 @@ document.addEventListener("DOMContentLoaded", () => {
     email.disabled = true; // 🔒 email never editable
 
     /* ================= LOAD PROFILE ================= */
-    fetch("/profile/data/", { credentials: "same-origin" })
+    function loadProfileData() {
+        return fetch("/profile/data/", { credentials: "same-origin" })
         .then(r => r.json())
         .then(d => {
             document.querySelector(".user-name").innerText = d.name;
@@ -1013,6 +1017,8 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("accountType").innerText = d.accountType;
             document.getElementById("twoFactorStatus").innerText =
                 d.twoFactorEnabled ? "Enabled ✓" : "Disabled";
+
+            if (window.ProfileBilling) window.ProfileBilling.render(d);
 
             document.getElementById("totalChats").innerText = d.stats.totalChats;
             document.getElementById("daysActive").innerText = d.stats.daysActive;
@@ -1039,18 +1045,90 @@ document.addEventListener("DOMContentLoaded", () => {
             // Activity
             const box = document.getElementById("activityContainer");
             if (d.activities.length) {
+                // PHASE 7 GOLDEN UI / security sweep: a.title comes from
+                // ChatHistory.query (the user's OWN free-form generation
+                // prompt, truncated server-side but never HTML-escaped)
+                // and was previously interpolated straight into innerHTML
+                // -- a real self-XSS gap (a stored prompt containing
+                // markup would execute when this page renders it back).
+                // DS.util.escapeHtml (static/js/api.js) closes it; a.icon
+                // is always one of a fixed set of emoji literals the
+                // server chooses (never user input), so it's left as-is.
                 box.innerHTML = d.activities.map(a => `
                     <div class="activity-item">
                         <div>${a.icon}</div>
                         <div>
-                            <div>${a.title}</div>
-                            <small>${a.time}</small>
+                            <div>${DS.util.escapeHtml(a.title)}</div>
+                            <small>${DS.util.escapeHtml(a.time)}</small>
                         </div>
                     </div>
                 `).join("");
             }
+
+            // PHASE 8 STEP 4 -- Feature Access & Usage. `d.entitlement.features`
+            // is a fully server-computed array (accounts.services.
+            // entitlement_service.get_entitlement_summary()) -- every field
+            // used below (allowed/reason/limits/remaining) comes straight
+            // from that response, never invented here. `reason` is only
+            // ever one of the fixed DenialReason codes that module defines,
+            // so the copy map below is presentation only.
+            renderFeatureAccess(d.entitlement);
         })
         .catch(() => UI.notify("Failed to load profile data"));
+    }
+
+    const FEATURE_DENIAL_COPY = {
+        FEATURE_DISABLED: "Temporarily unavailable",
+        PLAN_NOT_ALLOWED: "Available on a higher plan",
+        ENTITLEMENT_INACTIVE: "Subscription inactive",
+        ENTITLEMENT_EXPIRED: "Subscription expired",
+        QUOTA_EXCEEDED: "Quota reached for now",
+        GUEST_RESTRICTION: "Sign in to use this",
+        AUTHENTICATION_REQUIRED: "Sign in to use this",
+    };
+
+    function renderFeatureAccess(entitlement) {
+        const list = document.getElementById("featureAccessList");
+        if (!list) return;
+        const features = (entitlement && entitlement.features) || [];
+        if (!features.length) {
+            list.innerHTML = '<div style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">No feature data available.</div>';
+            return;
+        }
+
+        list.innerHTML = features.map(f => {
+            const badgeClass = f.allowed ? "ds-badge-success" : "ds-badge-neutral";
+            const badgeText = f.allowed ? "Available" : (FEATURE_DENIAL_COPY[f.reason] || "Not available");
+
+            // `remaining` only has keys for limits that actually apply to
+            // this feature/plan (e.g. a feature with no monthly cap simply
+            // has no monthly_remaining key) -- only render the ones present,
+            // never a fabricated "unlimited" or a made-up number.
+            const remainingParts = [];
+            if (f.remaining && typeof f.remaining.daily_remaining === "number") {
+                remainingParts.push(f.remaining.daily_remaining + " left today");
+            }
+            if (f.remaining && typeof f.remaining.monthly_remaining === "number") {
+                remainingParts.push(f.remaining.monthly_remaining + " left this month");
+            }
+            const remainingText = f.allowed && remainingParts.length
+                ? `<div class="info-label" style="margin-top:2px;">${DS.util.escapeHtml(remainingParts.join(" · "))}</div>`
+                : "";
+
+            return `
+                <div class="info-item">
+                    <span class="info-label">${DS.util.escapeHtml(f.name)}</span>
+                    <span>
+                        <span class="ds-badge ${badgeClass}">${DS.util.escapeHtml(badgeText)}</span>
+                        ${remainingText}
+                    </span>
+                </div>
+            `;
+        }).join("");
+    }
+
+    loadProfileData();
+    if (window.ProfileBilling) window.ProfileBilling.wireActions(loadProfileData);
 
     /* ================= EDIT PROFILE ================= */
     const editBtn = document.getElementById("editPersonalBtn");
@@ -1203,20 +1281,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 UI.notify(d.error);
                 return;
             }
-            window.location.href = "/";
+            window.location.href = "{% url 'home' %}";
         })
 
         .catch(() => UI.notify("Delete failed"));
     };
 
-    /* ================= LOGOUT ================= */
-    document.getElementById("logoutBtn").onclick = () => {
-        window.location.href = "/logout/";
-    };
-
 });
 </script>
 
-</body>
-</html>
+{% endblock %}
 

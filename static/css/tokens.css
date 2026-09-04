@@ -1,0 +1,129 @@
+/* static/css/tokens.css
+   PHASE 2 STEP 1 — FOUNDATION — Design tokens.
+
+   Source of truth: this is NOT a new palette. It is the :root block that
+   templates/login.html, templates/signup.html, templates/forget.html, and
+   templates/profile.html already each define independently, byte-for-byte
+   identical, and that static/css/billing.css already composes with via
+   var(--x, fallback). See PHASE_2_DESIGN_SYSTEM.md for the audit that
+   established this as the de-facto standard (5 of 8 pages).
+
+   This file makes that duplicated block into one real source. It changes
+   NOTHING visually on any existing page yet -- no template has been
+   switched to load this file instead of its own inline <style> :root
+   block. That switch is Phase 3 (see PHASE_2_FRONTEND_GAP_MATRIX.md,
+   GAP-01). Loading this file is additive/safe: it only defines custom
+   properties, so a page that loads it alongside its own inline :root
+   simply has its inline block win (later in the cascade, same
+   specificity by source order) -- no conflict.
+
+   Extends (does not rename) the existing token names so
+   static/css/billing.css's var(--x, fallback) calls resolve to real
+   values instead of always falling through to its hardcoded fallbacks. */
+
+:root {
+  /* ---- Core (Phase H — Angaari/Ember global identity) ----
+     Was a neutral gray/teal palette (see git history / PHASE_2_DESIGN_
+     SYSTEM.md for the prior values). Every consumer below already reads
+     these through var(--x), so retargeting the VALUES here is what makes
+     the ember identity global -- no template, no components.css/shell.css
+     selector, and no billing.css selector needed to change to pick this
+     up. Background stays white/warm-white per explicit requirement:
+     "background white hona chahiye" -- ember is an accent, not a flood. */
+  --bg-main: #fdfaf7;
+  --bg-card: #ffffff;
+  --text-primary: #26190f;
+  --text-secondary: #6b5a4d;
+  --border-color: #ede1d6;
+  --primary-color: #ff7a3d;
+  --primary-hover: #e8621f;
+  --input-bg: #ffffff;
+  --input-border: #e6d6c6;
+  --input-focus: #ff7a3d;
+  --shadow-sm: 0 1px 3px rgba(38, 25, 15, 0.06);
+  --shadow-md: 0 4px 14px rgba(38, 25, 15, 0.09);
+
+  /* ---- Danger/destructive -- unchanged; semantic color, not identity ---- */
+  --danger-color: #ef4444;
+  --danger-hover: #dc2626;
+
+  /* ---- New, additive tokens needed by shared components (Step 6) ----
+     success is now its own green (previously equal to primary, back when
+     primary WAS a teal/green) -- decoupled so "success" keeps meaning
+     success now that primary is ember-orange. */
+  --warning-color: #f59e0b;
+  --warning-bg: #fffbeb;
+  --success-color: #16a34a;
+  --success-bg: #ecfdf5;
+  --danger-bg: #fef2f2;
+  --info-color: #3b82f6;
+  --info-bg: #eff6ff;
+
+  --text-tertiary: #a89a8c;
+  --bg-hover: #faf3ec;
+  --bg-disabled: #f5efe8;
+  --border-focus: var(--input-focus);
+
+  /* ---- ANGAAri / EMBER premium tokens (Phase H) ----
+     Previously a dark charcoal surface scoped only to .billing-page
+     (Phase G). Retargeted to the light/white system so the SAME token
+     names now express the identity everywhere billing.css and any page
+     opts into an "ember surface" (premium cards, pricing, ambient glow)
+     -- still additive, no new theme-CSS architecture, no dark mode. */
+  --ember-bg: #ffffff;
+  --ember-bg-glow: radial-gradient(ellipse 900px 500px at 50% -10%, rgba(255, 138, 61, 0.10), transparent 60%);
+  --ember-surface: #ffffff;
+  --ember-surface-hover: #fff6ee;
+  --ember-border: #f2ded0;
+  --ember-border-strong: rgba(255, 122, 61, 0.45);
+  --ember-primary: #ff7a3d;
+  --ember-primary-hover: #ff8f5c;
+  --ember-amber: #ffb347;
+  --ember-deep: #c2410c;
+  --ember-soft: #fff3ea;
+  --ember-text: #26190f;
+  --ember-text-secondary: #6b5a4d;
+
+  /* Whole-page ambient background -- a very low-opacity ember glow over
+     the white base, applied to body so the app reads as "premium warm
+     white", not "plain white" (Part 13), without darkening anything. */
+  --page-ambient-glow:
+    radial-gradient(ellipse 1100px 600px at 12% -8%, rgba(255, 138, 61, 0.07), transparent 55%),
+    radial-gradient(ellipse 900px 500px at 100% 0%, rgba(255, 179, 71, 0.05), transparent 55%);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-family-mono: "Fira Code", "SFMono-Regular", Consolas, monospace;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-md: 15px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
+
+  --z-nav: 100;
+  --z-modal: 1000;
+  --z-toast: 1100;
+
+  --breakpoint-sm: 480px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+
+  --app-max-width: 1160px;
+}

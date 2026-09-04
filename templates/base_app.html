@@ -1,0 +1,47 @@
+{% load static %}
+{% comment %} templates/base_app.html
+   PHASE 2 STEP 1 — FOUNDATION — App shell base template.
+
+   No existing page extends this yet -- main.html, history.html,
+   profile.html and plans.html each remain self-contained templates for
+   now (see PHASE_2_FRONTEND_GAP_MATRIX.md GAP-01). This is the target
+   shell Phase 3 migrates them into, one page at a time.
+
+   Child templates: extend this file, override the `title` block, set
+   `active_nav` in their view context ("home"|"history"|"plans"|
+   "profile") for nav highlighting, and override the `content` block.
+
+   PHASE 6 STEP 6.8A: this file's own header used to be a multi-line
+   short-comment tag, which Django's template engine does NOT support --
+   that tag is single-line only; a newline inside it breaks recognition
+   entirely and the whole block renders as literal text instead of being
+   stripped (CODE-VERIFIED empirically: rendered a minimal multi-line
+   version of that tag directly and confirmed the raw text came through
+   unstripped). This was a real, latent bug in both this file and
+   nav_app.html from before this session -- invisible until now because
+   no page had ever actually rendered either template before main.html
+   adopted this shell in 6.8A. Switched to Django's real multi-line
+   comment block tag here and in nav_app.html.
+{% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}AI Generators{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
+  <link rel="icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}">
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+  <link rel="stylesheet" href="{% static 'css/shell.css' %}">
+  {% if user.is_authenticated %}<meta name="csrf-token" content="{{ csrf_token }}">{% endif %}
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="ds-shell-body">
+  {% include "partials/nav_app.html" %}
+  <main class="ds-shell-main">
+    {% block content %}{% endblock %}
+  </main>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>
