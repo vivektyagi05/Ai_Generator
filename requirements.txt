@@ -13,7 +13,7 @@ gunicorn==25.0.3
 h11==0.16.0
 httptools==0.7.1
 idna==3.11
-packaging==26.0
+packaging==26.3
 pillow==12.1.0
 psutil==5.9.8
 psycopg2-binary==2.9.11
