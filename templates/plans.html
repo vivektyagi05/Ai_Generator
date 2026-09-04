@@ -1,0 +1,211 @@
+{% extends "base_app.html" %}
+{% load static %}
+{% comment %} PHASE 7 GOLDEN UI: migrated onto the shared app shell
+   (base_app.html -> nav_app.html) instead of a standalone document with
+   its own minimal top-nav (a back-to-Generators link and a single
+   Profile/Login link -- no History link, no credit pill, no active-page
+   indicator). Its inline colors (#f7f7f8, #10a37f, #e5e5e8) already
+   coincidentally matched tokens.css by copy-paste, not by loading it --
+   this migration makes that the real, single source instead of a second
+   copy that could drift. All billing.js / BillingFlow logic, every
+   data-* attribute and element id it depends on, is unchanged.
+{% endcomment %}
+{% block title %}Pricing — AI Generators{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/billing.css' %}">
+{% endblock %}
+
+{% block content %}
+  <div class="billing-page">
+    <h1>Pricing</h1>
+    <p class="lede">Choose the plan that fits your AI workflow.</p>
+    <p class="lede-secondary">Plans, limits, credits and access are managed securely by the server-side billing and entitlement system.</p>
+
+    <div class="billing-status-banner" id="billingStatusBanner">
+      <span class="spinner" id="billingStatusSpinner"></span>
+      <span id="billingStatusText"></span>
+      <button type="button" class="retry-btn" id="billingRetryBtn" style="display:none;">Try Again</button>
+    </div>
+
+    <div class="plan-grid">
+      {% for row in plan_rows %}
+        <div class="plan-card {% if current_plan_code == row.plan.code %}is-current{% endif %}">
+          {% if current_plan_code == row.plan.code %}
+            <span class="plan-badge">Current plan</span>
+          {% endif %}
+          <h2>{{ row.plan.name }}</h2>
+          <p class="plan-desc">{{ row.plan.description }}</p>
+
+          {% if row.pricing %}
+            {% with monthly=row.pricing.MONTHLY yearly=row.pricing.YEARLY %}
+            {% if monthly and yearly %}
+              <div class="plan-interval-toggle" data-interval-toggle data-plan-code="{{ row.plan.code }}">
+                <button type="button" class="active" data-interval="MONTHLY">Monthly</button>
+                <button type="button" data-interval="YEARLY">Yearly</button>
+              </div>
+            {% endif %}
+            <div class="plan-price" id="price-{{ row.plan.code }}">
+              {% if monthly %}{{ monthly.amount_display }}<span class="interval">/month</span>{% else %}{{ yearly.amount_display }}<span class="interval">/year</span>{% endif %}
+            </div>
+            {% endwith %}
+          {% else %}
+            <div class="plan-price">₹0<span class="interval">/forever</span></div>
+          {% endif %}
+
+          <ul class="plan-features">
+            {% for rule in row.rules %}
+              <li>
+                {{ rule.feature.name }} —
+                {% if rule.access == "DISABLED" %}not included{% elif rule.daily_limit %}{{ rule.daily_limit }}/day{% else %}unlimited/day{% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+
+          {% if row.pricing %}
+            {# Payable plan (currently PREMIUM) #}
+            {% if not user.is_authenticated %}
+              <a class="plan-cta" href="{% url 'login' %}?next={% url 'plans_page' %}">Log in to upgrade</a>
+            {% elif current_plan_code == row.plan.code %}
+              <button class="plan-cta secondary" disabled>Premium Active</button>
+              <div class="plan-status-line">
+                {% if live_subscription.cancel_at_period_end %}
+                  Active until {{ live_subscription.current_period_end|date:"d M Y" }} (cancels then)
+                {% elif live_subscription.current_period_end %}
+                  Renews {{ live_subscription.current_period_end|date:"d M Y" }}
+                {% endif %}
+                — manage in your <a href="{% url 'profile' %}">profile</a>.
+              </div>
+            {% else %}
+              <button
+                class="plan-cta"
+                id="upgradeBtn-{{ row.plan.code }}"
+                data-upgrade-btn
+                data-plan-code="{{ row.plan.code }}"
+                data-monthly-paise="{% if row.pricing.MONTHLY %}{{ row.pricing.MONTHLY.amount_paise }}{% endif %}"
+                data-yearly-paise="{% if row.pricing.YEARLY %}{{ row.pricing.YEARLY.amount_paise }}{% endif %}"
+              >
+                Upgrade securely
+              </button>
+            {% endif %}
+          {% else %}
+            {# FREE / non-payable plan #}
+            {% if current_plan_code == row.plan.code or not user.is_authenticated %}
+              <button class="plan-cta secondary" disabled>Current plan</button>
+            {% else %}
+              <button class="plan-cta secondary" disabled>Included</button>
+            {% endif %}
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{% static 'js/billing.js' %}"></script>
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var STATES = window.BillingFlow.STATES;
+    var banner = document.getElementById("billingStatusBanner");
+    var spinner = document.getElementById("billingStatusSpinner");
+    var text = document.getElementById("billingStatusText");
+    var retryBtn = document.getElementById("billingRetryBtn");
+
+    var activeButton = null;
+    var lastUpgradeParams = null;
+
+    function setButtonBusy(btn, busy, label) {
+      if (!btn) return;
+      btn.disabled = busy;
+      if (label) btn.textContent = label;
+    }
+
+    var flow = window.BillingFlow.create({
+      onStateChange: function (state, message, extra) {
+        banner.classList.add("visible");
+        banner.classList.remove("state-success", "state-failed", "state-error");
+        retryBtn.style.display = "none";
+        spinner.style.display = "inline-block";
+
+        text.textContent = (extra && extra.message) || message;
+
+        if (state === STATES.IDLE) {
+          banner.classList.remove("visible");
+        } else if (state === STATES.SUCCESS) {
+          spinner.style.display = "none";
+          banner.classList.add("state-success");
+          if (extra && extra.activationPending) {
+            text.textContent = "Payment captured. Activating your Premium access — refresh in a moment if it doesn't update automatically.";
+          }
+          setTimeout(function () { window.location.href = "{% url 'profile' %}"; }, 1800);
+        } else if (window.BillingFlow.RETRYABLE_STATES[state]) {
+          spinner.style.display = "none";
+          banner.classList.add(state === "FAILED" || state === "NETWORK_ERROR" ? "state-failed" : "state-error");
+          retryBtn.style.display = "inline-block";
+        } else if (state === "CONFIG_UNAVAILABLE") {
+          // Deterministic environment problem, not a transient failure --
+          // no retry button (retrying can't succeed until billing is
+          // configured), but the banner still needs to resolve out of its
+          // spinning state (Phase C).
+          spinner.style.display = "none";
+          banner.classList.add("state-failed");
+        }
+
+        if (activeButton) {
+          if (state === STATES.IDLE) {
+            setButtonBusy(activeButton, false, "Upgrade securely");
+          } else if (window.BillingFlow.RETRYABLE_STATES[state]) {
+            setButtonBusy(activeButton, false, "Try Again");
+          } else if (state === "CONFIG_UNAVAILABLE") {
+            setButtonBusy(activeButton, true, "Secure checkout unavailable");
+          } else if (state !== STATES.SUCCESS) {
+            setButtonBusy(activeButton, true, message);
+          }
+        }
+      },
+      onSuccess: function () {
+        // handled via onStateChange SUCCESS branch (redirect to profile)
+      },
+    });
+
+    document.querySelectorAll("[data-upgrade-btn]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var planCode = btn.getAttribute("data-plan-code");
+        var toggle = document.querySelector('[data-interval-toggle][data-plan-code="' + planCode + '"]');
+        var interval = "MONTHLY";
+        if (toggle) {
+          var activeToggle = toggle.querySelector("button.active");
+          if (activeToggle) interval = activeToggle.getAttribute("data-interval");
+        }
+        activeButton = btn;
+        lastUpgradeParams = { plan: planCode, billingInterval: interval };
+        flow.upgrade(lastUpgradeParams);
+      });
+    });
+
+    document.querySelectorAll("[data-interval-toggle]").forEach(function (toggle) {
+      var planCode = toggle.getAttribute("data-plan-code");
+      var priceEl = document.getElementById("price-" + planCode);
+      var btn = document.getElementById("upgradeBtn-" + planCode) || {};
+      toggle.querySelectorAll("button").forEach(function (b) {
+        b.addEventListener("click", function () {
+          toggle.querySelectorAll("button").forEach(function (x) { x.classList.remove("active"); });
+          b.classList.add("active");
+          var interval = b.getAttribute("data-interval");
+          var paise = btn.getAttribute ? btn.getAttribute("data-" + interval.toLowerCase() + "-paise") : null;
+          if (priceEl && paise) {
+            var rupees = (parseInt(paise, 10) / 100).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+            priceEl.innerHTML = "\u20B9" + rupees + '<span class="interval">/' + (interval === "MONTHLY" ? "month" : "year") + "</span>";
+          }
+        });
+      });
+    });
+
+    retryBtn.addEventListener("click", function () {
+      flow.reset();
+      if (lastUpgradeParams) flow.upgrade(lastUpgradeParams);
+    });
+  });
+  </script>
+{% endblock %}

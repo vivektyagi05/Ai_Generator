@@ -6,7 +6,19 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+# PHASE 8A — forensic audit item: a key pasted into .env with surrounding
+# whitespace or accidental quote characters (e.g. GROQ_API_KEY="gsk_..." or
+# GROQ_API_KEY=gsk_...\n with a trailing newline from some shells) used to
+# be sent to Groq byte-for-byte, producing an auth failure that looked
+# identical to a missing key. Normalize once, here, so every caller
+# (AI_GENERATORS/api_views.py, any future health-check) sees the same,
+# already-clean value.
+_raw_groq_key = os.getenv("GROQ_API_KEY")
+if _raw_groq_key is not None:
+    _raw_groq_key = _raw_groq_key.strip()
+    if len(_raw_groq_key) >= 2 and _raw_groq_key[0] == _raw_groq_key[-1] and _raw_groq_key[0] in ("'", '"'):
+        _raw_groq_key = _raw_groq_key[1:-1].strip()
+GROQ_API_KEY = _raw_groq_key or ""
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
@@ -17,21 +29,69 @@ DEBUG = os.getenv("DEBUG") == "True"
 
 ALLOWED_HOSTS = ['127.0.0.1', '.onrender.com']
 
-# Cache — used by accounts/rate_limit.py for OTP send cooldowns/windows and
-# per-IP throttling. LocMemCache (Django's default when CACHES isn't set)
-# is per-process; see accounts/rate_limit.py's module docstring for the
-# production implication of that with multiple gunicorn workers. Explicit
-# here so the choice is visible rather than implicit.
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+# Cache — used by accounts/rate_limit.py for OTP send cooldowns/windows,
+# per-IP throttling, and the AI generation rate limiter. accounts/rate_limit.py
+# talks only to Django's cache API (cache.get/set/incr), so it needs zero
+# code changes to become production-safe here.
+#
+# PHASE 9 — Step 2: LocMemCache is per-process. With multiple Gunicorn
+# workers (this app's Procfile runs several), each worker keeps its own
+# counters, so the *effective* limit becomes (configured limit) x (worker
+# count) and a client can partially evade a single worker's cooldown by
+# landing on another. That's fine for local dev (single process) but not
+# for a real multi-worker deployment.
+#
+# Fix: if REDIS_URL is set, use Django's built-in Redis cache backend
+# (no extra dependency needed — django.core.cache.backends.redis.RedisCache
+# has shipped in Django since 4.0) so all workers/instances share one set
+# of counters. If it isn't set, fall back to LocMemCache so local
+# development and CI keep working with zero setup, and log a one-time
+# warning in production so the gap is visible instead of silent.
+REDIS_URL = os.getenv("REDIS_URL", "")
+
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+        }
     }
-}
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    }
+    if not DEBUG:
+        logging.getLogger("accounts").warning(
+            "REDIS_URL is not set: rate limiting is running on a "
+            "per-process LocMemCache in a non-DEBUG environment. If more "
+            "than one worker/instance serves traffic, OTP/login/AI rate "
+            "limits are effectively multiplied by the process count. Set "
+            "REDIS_URL to share counters across processes."
+        )
 
 # Email is now sent via the Brevo transactional API (see accounts/email/),
 # not Django's SMTP backend. Configuration is loaded directly from
 # environment variables by accounts/email/config.py — see .env.example for
 # the required EMAIL_PROVIDER / BREVO_API_KEY / EMAIL_FROM / EMAIL_FROM_NAME.
+
+# PHASE 4 — Razorpay payment configuration. Loaded from the environment
+# ONLY -- never hardcoded, never committed (see .env.example). These are
+# read here (not directly via os.getenv in accounts/services/razorpay_client.py)
+# so every other module always goes through Django settings the same way it
+# already does for GROQ_API_KEY/SECRET_KEY above, and so tests can override
+# them with Django's @override_settings instead of mutating the environment.
+#
+# Deliberately not validated with `raise Exception(...)` at import time the
+# way SECRET_KEY is above: unlike SECRET_KEY, a missing Razorpay credential
+# should not prevent the whole site (login, AI generators, etc.) from
+# starting up -- only the billing endpoints need it, and they fail safely
+# (503, no secret ever logged) at the moment they're actually called if it's
+# absent. See accounts/services/razorpay_client.py:get_client().
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
+RAZORPAY_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
 
 # Application definition
 
@@ -132,6 +192,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # For collectstatic in production
+# PHASE 4B: project-root static/ (css/js for pricing + profile billing UI),
+# same convention as TEMPLATES['DIRS'] above -- no app has its own static/
+# directory, so without this the staticfiles finder would never see it.
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -152,6 +216,29 @@ CSRF_COOKIE_HTTPONLY = False
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+
+# PHASE 9 — Step 1: SECURE_SSL_REDIRECT / HSTS / proxy header.
+#
+# Left OFF by default even when DEBUG=False, because whether these are
+# correct depends on deployment topology, not just on being "in
+# production": if TLS terminates at a load balancer/reverse proxy that
+# already redirects HTTP->HTTPS (Render's default routing does), Django
+# also redirecting can create a redirect loop unless
+# SECURE_PROXY_SSL_HEADER is set to trust the proxy's forwarded-proto
+# header. Getting SECURE_PROXY_SSL_HEADER wrong (trusting a header an
+# attacker can spoof directly) is worse than the check --deploy warning it
+# silences, so this is opt-in via env rather than silently enabled.
+#
+# Set BEHIND_TLS_PROXY=True once confirmed the deployment's proxy (a) sets
+# X-Forwarded-Proto itself, and (b) cannot be reached by clients directly
+# (bypassing the proxy) — otherwise a client could spoof the header and
+# defeat the redirect logic it's meant to enforce.
+if not DEBUG and os.getenv("BEHIND_TLS_PROXY") == "True":
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
 
 # ── Logging ──────────────────────────────────────────────────────────────

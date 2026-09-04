@@ -1,0 +1,442 @@
+/* PHASE 4B — billing UI styles.
+   Reuses the design tokens already defined in templates/profile.html's
+   :root (--bg-card, --primary-color, --text-secondary, --danger-color,
+   --border-color, --shadow-sm/md). This file only adds selectors that do
+   not already exist elsewhere -- it does not redefine .card/.btn-primary/
+   .btn-secondary, it composes with them. */
+
+/* ANGAAri / EMBER (Phase G) -- visual layer only, no billing-logic
+   changes. Deep charcoal surface with a soft ember glow, restrained
+   amber/orange accents. Scoped entirely to .billing-page so nothing
+   outside the pricing page is affected. */
+.billing-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 48px 24px 88px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  color: var(--ember-text);
+  background: var(--ember-bg);
+  background-image: var(--ember-bg-glow);
+  border-radius: 20px;
+}
+
+.billing-page h1 {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+  color: var(--ember-text);
+}
+
+.billing-page .lede {
+  color: var(--ember-text);
+  margin-bottom: 4px;
+  font-size: 17px;
+}
+
+.billing-page .lede-secondary {
+  color: var(--ember-text-secondary);
+  margin-bottom: 32px;
+  font-size: 14px;
+  max-width: 640px;
+}
+
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.plan-card {
+  background: var(--ember-surface);
+  border: 1px solid var(--ember-border);
+  border-radius: 16px;
+  padding: 28px 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.12s ease;
+}
+
+.plan-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.plan-card.is-current {
+  border-color: var(--ember-border-strong);
+  box-shadow: 0 0 0 1px rgba(255, 154, 74, 0.25), 0 8px 28px rgba(255, 122, 61, 0.12);
+}
+
+/* Premium is the only payable plan today (accounts/billing_config.py) --
+   giving every card with a purchasable price a subtle "Premium" ring
+   keeps this from being a separate hardcoded plan-code check. */
+.plan-card:has(.plan-interval-toggle) {
+  border-color: var(--ember-border-strong);
+}
+
+.plan-card .plan-badge {
+  position: absolute;
+  top: -12px;
+  right: 20px;
+  background: linear-gradient(135deg, var(--ember-primary), var(--ember-amber));
+  color: #1a0f08;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.plan-card h2 {
+  font-size: 20px;
+  margin-bottom: 4px;
+  color: var(--ember-text);
+}
+
+.plan-card .plan-price {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 12px 0 4px;
+  color: var(--ember-text);
+}
+
+.plan-card .plan-price .interval {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ember-text-secondary);
+}
+
+.plan-card .plan-desc {
+  color: var(--ember-text-secondary);
+  font-size: 14px;
+  margin-bottom: 16px;
+  min-height: 20px;
+}
+
+.plan-card .plan-interval-toggle {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.plan-card .plan-interval-toggle button {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--ember-border);
+  background: transparent;
+  color: var(--ember-text-secondary);
+  cursor: pointer;
+}
+
+.plan-card .plan-interval-toggle button.active {
+  background: var(--ember-primary);
+  border-color: var(--ember-primary);
+  color: #1a0f08;
+}
+
+.plan-card ul.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+  flex: 1;
+}
+
+.plan-card ul.plan-features li {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--ember-border);
+  font-size: 13px;
+  color: var(--ember-text);
+}
+
+.plan-card ul.plan-features li:last-child {
+  border-bottom: none;
+}
+
+.plan-card .plan-cta {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--ember-primary), #ff5f2e);
+  color: #1a0f08;
+  transition: background 0.15s ease, opacity 0.15s ease, transform 0.1s ease;
+}
+
+.plan-card .plan-cta:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--ember-primary-hover), #ff713a);
+}
+
+.plan-card .plan-cta:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.plan-card .plan-cta:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.plan-card .plan-cta.secondary {
+  background: transparent;
+  border: 1px solid var(--ember-border);
+  color: var(--ember-text);
+}
+
+.plan-card .plan-cta.secondary:hover:not(:disabled) {
+  background: var(--ember-surface-hover);
+}
+
+/* Keyboard focus must stay clearly visible against the dark surface
+   (Phase I accessibility requirement). */
+.plan-card .plan-cta:focus-visible,
+.plan-card .plan-interval-toggle button:focus-visible {
+  outline: 2px solid var(--ember-amber);
+  outline-offset: 2px;
+}
+
+.plan-card .plan-status-line {
+  font-size: 13px;
+  color: var(--ember-text-secondary);
+  margin-top: 10px;
+  text-align: center;
+}
+
+.plan-card .plan-status-line a {
+  color: var(--ember-primary-hover, #e8621f);
+  font-weight: 600;
+}
+
+/* ---- payment state banner (shared: pricing page + profile) ---- */
+
+.billing-status-banner {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin: 20px 0;
+  border: 1px solid var(--border-color, #e5e5e8);
+  background: var(--bg-card, #fff);
+}
+
+.billing-status-banner.visible {
+  display: flex;
+}
+
+.billing-status-banner .spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color, #e5e5e8);
+  border-top-color: var(--primary-color, #ff7a3d);
+  animation: billing-spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes billing-spin {
+  to { transform: rotate(360deg); }
+}
+
+.billing-status-banner.state-success {
+  border-color: var(--success-color, #16a34a);
+  background: var(--success-bg, #ecfdf5);
+  color: #0d6a52;
+}
+
+.billing-status-banner.state-failed,
+.billing-status-banner.state-error {
+  border-color: var(--danger-color, #ef4444);
+  background: rgba(239, 68, 68, 0.06);
+  color: var(--danger-color, #ef4444);
+}
+
+/* PHASE 8B Rule 5 -- refund UX. A persistent, non-transient informational
+   notice (no spinner, no auto-hide) distinct from state-success/state-
+   failed above, which are both flow-transient (BillingFlow states). Reuses
+   the existing --info-color/--info-bg tokens rather than inventing new
+   colors. */
+.billing-status-banner.state-info {
+  border-color: var(--info-color, #3b82f6);
+  background: var(--info-bg, #eff6ff);
+  color: #1d4ed8;
+}
+
+.billing-status-banner .retry-btn {
+  margin-left: auto;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* PHASE 8 STEP 6 -- Result Management / Retry. Base styling for a
+   standalone .retry-btn used outside .billing-status-banner (see
+   renderAiFailure()'s generic failure branch in main.html) -- the
+   scoped rule above still wins inside that banner via specificity, so
+   this doesn't change the existing billing-flow retry button. */
+.retry-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid var(--danger-color, #ef4444);
+  background: transparent;
+  color: var(--danger-color, #ef4444);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.retry-btn:hover {
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* ---- profile billing card ---- */
+
+.billing-usage-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--border-color, #e5e5e8);
+  overflow: hidden;
+  margin: 8px 0 4px;
+}
+
+.billing-usage-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--primary-color, #ff7a3d);
+  transition: width 0.3s ease;
+}
+
+.billing-usage-bar.is-critical > span {
+  background: var(--danger-color, #ef4444);
+}
+
+.billing-usage-numbers {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary, #6e6e80);
+}
+
+.premium-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #ffd76a, #ff9f43);
+  color: #4a2c00;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+
+/* Ember-themed pricing banner (Phase C/G) -- overrides the shared
+   .billing-status-banner base rules above only inside .billing-page;
+   templates/profile.html's identical-class banner is untouched. */
+.billing-page .billing-status-banner {
+  border-color: var(--ember-border);
+  background: var(--ember-surface);
+  color: var(--ember-text);
+}
+
+.billing-page .billing-status-banner .spinner {
+  border-color: var(--ember-border);
+  border-top-color: var(--ember-primary);
+}
+
+.billing-page .billing-status-banner.state-success {
+  border-color: rgba(255, 179, 71, 0.5);
+  background: rgba(255, 179, 71, 0.12);
+  color: var(--ember-deep, #c2410c);
+}
+
+.billing-page .billing-status-banner.state-failed,
+.billing-page .billing-status-banner.state-error {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.07);
+  color: var(--danger-color, #ef4444);
+}
+
+.billing-page .billing-status-banner .retry-btn {
+  border-color: currentColor;
+}
+
+@media (max-width: 640px) {
+  .billing-page { padding: 24px 14px 60px; border-radius: 14px; }
+  .plan-grid { grid-template-columns: 1fr; }
+}
+
+/* ---- AI-generation credit-exhaustion / access-denial card ----
+   Used by templates/main.html's renderAiFailure()/renderExhaustionCard()
+   inside an output panel (e.g. #codeOutput, #storyOutput) whose own
+   surrounding page styles vary per tab -- kept self-contained so it looks
+   right dropped into any of them. */
+
+.ai-exhaustion-card {
+  background: var(--ember-soft, #fff3ea);
+  border: 1px solid var(--ember-border, #f2ded0);
+  border-radius: 12px;
+  padding: 22px 20px;
+  text-align: center;
+  color: var(--ember-text, #26190f);
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.ai-exhaustion-card--success {
+  border-color: var(--success-color, #16a34a);
+  background: var(--success-bg, #ecfdf5);
+}
+
+.ai-exhaustion-card .ai-exhaustion-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.ai-exhaustion-card .ai-exhaustion-message {
+  font-size: 14px;
+  opacity: 0.85;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.ai-exhaustion-card .ai-exhaustion-cta {
+  display: inline-block;
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: none;
+  background: var(--primary-color, #ff7a3d);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.ai-exhaustion-card .ai-exhaustion-cta:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.ai-exhaustion-card .ai-exhaustion-cta:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ai-exhaustion-card .billing-status-banner {
+  margin: 14px 0 0;
+  text-align: left;
+  background: var(--ember-surface, #fff);
+  border-color: var(--ember-border, #f2ded0);
+  color: var(--ember-text, #26190f);
+}
+

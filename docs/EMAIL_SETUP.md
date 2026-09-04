@@ -60,13 +60,12 @@ email configured. See "Local setup" below.
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate  
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env        
+cp .env.example .env        # fill in real values
 python manage.py migrate
 python manage.py runserver
 ```
-
 
 You can run the app locally without a Brevo key configured — everything
 except actually sending email will work, and any OTP-send attempt will

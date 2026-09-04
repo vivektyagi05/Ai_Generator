@@ -60,7 +60,28 @@ def verify_otp(email: str, purpose: str, submitted_otp: str):
     try:
         record = EmailOTP.objects.get(email=email, purpose=purpose)
     except EmailOTP.DoesNotExist:
-        return False, "Verification code not found or already used. Please request a new one.", 400
+        # PHASE 8A SECURITY HARDENING: previously returned a distinct
+        # message ("Verification code not found or already used...")
+        # here vs. the wrong-code branch below ("Invalid verification
+        # code."). That distinction was a real, directly exploitable
+        # enumeration side channel on the forgot-password flow
+        # specifically: forgot_send_otp() already returns an identical
+        # generic response for a registered vs. unregistered email (see
+        # accounts/views.py's _FORGOT_SEND_GENERIC_RESPONSE and
+        # test_forgot_password.py's test_enumeration_resistant_response_
+        # bodies_match), but no EmailOTP row is ever created for an
+        # unregistered email -- so an attacker could immediately follow
+        # send-otp with a guessed verify-otp call and use which message
+        # came back to determine whether the account exists, without
+        # ever needing the real code. Returning the identical message/
+        # status as an incorrect guess against a real, pending OTP
+        # closes that channel. `expired`/`max-attempts` below are left
+        # distinct: both require a record to have actually existed, and
+        # are legitimate, harder-to-weaponize UX signals for a user who
+        # already knows they received a real code (whether to resend vs.
+        # retype) -- not the same immediately-exploitable oracle as this
+        # one.
+        return False, "Invalid verification code.", 400
 
     if record.is_expired():
         record.delete()

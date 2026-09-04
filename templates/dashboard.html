@@ -1,0 +1,194 @@
+{% extends "base_app.html" %}
+{% comment %} PHASE 8 STEP 5 -- User Dashboard.
+
+   New page, built on the shared app shell from the start (unlike
+   history/profile/main, which were migrated onto base_app.html/
+   nav_app.html later -- see those files' own comments) since no legacy
+   standalone version of this page ever existed. Every number below
+   comes straight from accounts/views.py:dashboard_view()'s context --
+   no client-side computation, no placeholder figures.
+{% endcomment %}
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_head %}
+<style>
+    .dash-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: var(--space-5);
+        margin-bottom: var(--space-6);
+    }
+    .dash-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: var(--space-6);
+        box-shadow: var(--shadow-sm);
+        transition: box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+    .dash-card:hover {
+        box-shadow: var(--shadow-md);
+        border-color: var(--ember-border-strong);
+    }
+    .dash-card h2 {
+        font-size: var(--text-lg);
+        color: var(--text-primary);
+        margin-bottom: var(--space-4);
+    }
+    .dash-stat-value { font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary); }
+    .dash-stat-label { color: var(--text-secondary); font-size: var(--text-sm); margin-top: 2px; }
+    .dash-quick-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .dash-quick-actions a {
+        padding: 8px 14px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        background: var(--bg-main);
+        color: var(--text-primary);
+        text-decoration: none;
+        font-size: var(--text-sm);
+        font-weight: 600;
+    }
+    .dash-quick-actions a:hover { background: var(--bg-hover); border-color: var(--primary-color); }
+    .dash-list-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-3) 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .dash-list-row:last-child { border-bottom: none; }
+    .dash-row-title { color: var(--text-primary); font-size: var(--text-sm); }
+    .dash-row-meta { color: var(--text-secondary); font-size: var(--text-xs, 12px); }
+    .dash-empty { color: var(--text-secondary); text-align: center; padding: var(--space-6) 0; }
+    .dash-feature-counts { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <h1 style="margin-bottom: var(--space-2);">Welcome back{% if user.first_name %}, {{ user.first_name }}{% endif %}</h1>
+    <p style="color: var(--text-secondary); margin-bottom: var(--space-6);">Here's where things stand.</p>
+
+    <div class="dash-grid">
+        <div class="dash-card">
+            <h2>Credits</h2>
+            <div class="dash-stat-value">{{ credits.available_balance }}</div>
+            <div class="dash-stat-label">available now ({{ credits.reserved_balance }} reserved)</div>
+            <div style="margin-top: var(--space-4); font-size: var(--text-sm); color: var(--text-secondary);">
+                {{ credits.lifetime_earned }} earned all-time &middot; {{ credits.lifetime_used }} used all-time
+            </div>
+            <div style="margin-top: var(--space-4);">
+                <a class="ds-focusable" href="{% url 'plans_page' %}" style="color: var(--primary-color); font-weight: 600; font-size: var(--text-sm); text-decoration: none;">View plans &rarr;</a>
+            </div>
+        </div>
+
+        <div class="dash-card">
+            <h2>Plan</h2>
+            <div class="dash-stat-value">{{ entitlement.plan|title }}</div>
+            <div class="dash-stat-label">{{ entitlement.entitlement_status|title }}</div>
+            {% if entitlement.expires_at %}
+            <div style="margin-top: var(--space-3); font-size: var(--text-sm); color: var(--text-secondary);">
+                Renews/expires {{ entitlement.expires_at }}
+            </div>
+            {% endif %}
+            {% if lapsed_subscription %}
+            {% comment %}
+            PHASE 8B Rule 6 -- same component/logic as profile.html's
+            #billingLapsedNotice (Item 2), server-rendered here instead of
+            fetched, since dashboard_view already has the data in context
+            and this page has no client-side billing-state fetch of its own
+            to hang a second copy off of.
+            {% endcomment %}
+            <div class="billing-status-banner state-info visible" role="status" style="margin-top: var(--space-3); font-size: var(--text-sm);">
+                {% if lapsed_subscription.reason == "refunded" %}
+                Your {{ lapsed_subscription.plan|title }} payment was refunded and access was revoked{% if lapsed_subscription.ended_at %} on {{ lapsed_subscription.ended_at|slice:":10" }}{% endif %}. You can upgrade again any time.
+                {% else %}
+                Your {{ lapsed_subscription.plan|title }} plan ended{% if lapsed_subscription.ended_at %} on {{ lapsed_subscription.ended_at|slice:":10" }}{% endif %}. Upgrade again any time.
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="dash-card">
+            <h2>Total Generations</h2>
+            <div class="dash-stat-value">{{ total_generations }}</div>
+            <div class="dash-stat-label">across all generators</div>
+            {% if generation_counts %}
+            <div class="dash-feature-counts" style="margin-top: var(--space-3);">
+                {% for row in generation_counts %}
+                <span class="ds-badge ds-badge-neutral">{{ row.label }}: {{ row.count }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="dash-card" style="margin-bottom: var(--space-6);">
+        <h2>Quick Actions</h2>
+        <div class="dash-quick-actions">
+            <a class="ds-focusable" href="{% url 'home' %}?generator=photo">📷 New Photo</a>
+            <a class="ds-focusable" href="{% url 'home' %}?generator=story">📚 New Story</a>
+            <a class="ds-focusable" href="{% url 'home' %}?generator=application">📄 New Application</a>
+            <a class="ds-focusable" href="{% url 'home' %}?generator=proposal">💼 New Proposal</a>
+            <a class="ds-focusable" href="{% url 'home' %}?generator=code">💻 New Code</a>
+        </div>
+    </div>
+
+    <div class="dash-grid">
+        <div class="dash-card">
+            <h2>Recent Generations</h2>
+            {% if recent_generations %}
+            {% for item in recent_generations %}
+            <div class="dash-list-row">
+                <div>
+                    <div class="dash-row-title">{{ item.query|truncatechars:60 }}</div>
+                    <div class="dash-row-meta">{{ item.created_at|date:"d M Y, h:i A" }}{% if item.feature_label %} &middot; {{ item.feature_label }}{% endif %}</div>
+                </div>
+                {% if item.is_reopenable %}
+                <a class="ds-focusable" href="{% url 'home' %}?generator={{ item.feature }}&reopen={{ item.id }}" style="color: var(--primary-color); font-size: var(--text-sm); text-decoration: none; white-space: nowrap;">Reopen</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <div style="margin-top: var(--space-4);">
+                <a class="ds-focusable" href="{% url 'history' %}" style="color: var(--primary-color); font-weight: 600; font-size: var(--text-sm); text-decoration: none;">View full history &rarr;</a>
+            </div>
+            {% else %}
+            <div class="dash-empty">No generations yet — try one of the Quick Actions above.</div>
+            {% endif %}
+        </div>
+
+        <div class="dash-card">
+            <h2>Recent Activity</h2>
+            {% comment %}
+            PHASE 8 STEP 5: unlike Recent Generations (ChatHistory,
+            successes only), this reads AIUsage -- the operational
+            record of every request outcome including failures,
+            timeouts, and denials, so a recent failed generation is
+            genuinely visible here instead of silently missing.
+            {% endcomment %}
+            {% if recent_requests %}
+            {% for req in recent_requests %}
+            <div class="dash-list-row">
+                <div>
+                    <div class="dash-row-title">{{ req.feature|default:"chat"|title }}</div>
+                    <div class="dash-row-meta">{{ req.created_at|date:"d M Y, h:i A" }}</div>
+                </div>
+                {% if req.status == "FINALIZED" %}
+                <span class="ds-badge ds-badge-success">Success</span>
+                {% elif req.status == "REQUESTED" or req.status == "RESERVED" %}
+                <span class="ds-badge ds-badge-info">In progress</span>
+                {% else %}
+                <span class="ds-badge ds-badge-danger" title="{{ req.error_code }}">{{ req.get_status_display }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="dash-empty">No activity yet.</div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

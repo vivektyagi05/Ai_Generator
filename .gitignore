@@ -1,6 +1,47 @@
 .env
+.env.*
+!.env.example
+
+# Local databases / runtime state
 db.sqlite3
-media/
+*.sqlite3
+
+# Django/static build output
+staticfiles/
+
+# Python cache / build artifacts
 __pycache__/
-*.pyc
-.venv
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Runtime logs
+logs/
+*.log
+
+# User/runtime media: keep directory placeholder, never user files
+media/avatars/*
+media/generated/*
+media/uploads/*
+
+# IDE/editor/OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Coverage
+.coverage
+htmlcov/
+coverage.xml

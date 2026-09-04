@@ -1,0 +1,21 @@
+{% load static %}
+{% comment %} templates/partials/nav_public.html
+   PHASE 2 STEP 1 — FOUNDATION — Guest-facing public-shell nav.
+   Used by login/signup/forgot-password/public-pricing per
+   PHASE_2_FRONTEND_ARCHITECTURE.md "Step 5". Not included by any
+   existing page yet -- foundation only, adopted in Phase 3. 
+{% endcomment %}
+<nav class="ds-nav">
+  <a class="ds-nav-brand" href="{% url 'home' %}">AI Generators</a>
+  <ul class="ds-nav-links">
+    <li><a href="{% url 'home' %}">Generators</a></li>
+    <li><a href="{% url 'plans_page' %}" {% if active_nav == 'plans' %}aria-current="page"{% endif %}>Pricing</a></li>
+  </ul>
+  <div class="ds-nav-actions">
+    <a href="{% url 'login' %}" class="ds-btn ds-btn-secondary" {% if active_nav == 'login' %}aria-current="page"{% endif %}>Log in</a>
+    <a href="{% url 'signup' %}" class="ds-btn ds-btn-primary" {% if active_nav == 'signup' %}aria-current="page"{% endif %}>Sign up</a>
+  </div>
+</nav>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/toast.js' %}"></script>
