@@ -17,7 +17,7 @@ packaging==26.0
 pillow==12.1.0
 psutil==5.9.8
 psycopg2-binary==2.9.11
-pydantic==2.6.1
+pydantic==2.13.5
 pydantic-settings==2.1.0
 pydantic_core==2.16.2
 python-dotenv==1.2.1
